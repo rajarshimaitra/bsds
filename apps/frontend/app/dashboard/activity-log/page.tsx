@@ -200,6 +200,10 @@ const SUBMEMBER_ACTIONS = new Set([
   "submember_add_requested", "submember_add_approved", "submember_add_rejected",
   "submember_edit_requested", "submember_edit_approved", "submember_edit_rejected",
   "submember_delete_requested", "submember_delete_approved", "submember_delete_rejected",
+  // Actual backend strings (approval_service outcome format)
+  "sub_member_add_approved", "sub_member_add_rejected",
+  "sub_member_edit_approved", "sub_member_edit_rejected",
+  "sub_member_remove_approved", "sub_member_remove_rejected",
   // Legacy strings (current backend, pre-T7B-5)
   "sub_member_created", "sub_member_add_requested",
   "sub_member_updated", "sub_member_edit_requested",
@@ -385,6 +389,7 @@ function TransactionDetailsPanel({
 }) {
   const isMembership = txn.category === "MEMBERSHIP";
   const isSponsorship = txn.category === "SPONSORSHIP";
+  const isExpense = txn.category === "EXPENSE" || txn.type === "CASH_OUT";
 
   return (
     <div className="space-y-4">
@@ -452,6 +457,18 @@ function TransactionDetailsPanel({
             <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
             {txn.sponsorSenderContact && (
               <DetailRow label="Contact" value={txn.sponsorSenderContact} />
+            )}
+          </div>
+        </div>
+      ) : isExpense && !isSponsorship && (txn.sponsorSenderName || txn.sponsorSenderContact) ? (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+            Sent By
+          </p>
+          <div className="rounded-md border px-3">
+            <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
+            {txn.sponsorSenderContact && (
+              <DetailRow label="Phone" value={txn.sponsorSenderContact} />
             )}
           </div>
         </div>
@@ -603,10 +620,17 @@ export default function ActivityLogPage() {
       (MEMBER_ACTIONS.has(entry.action) || SUBMEMBER_ACTIONS.has(entry.action)) &&
       !isFinancialAction(entry.action)
     ) {
+      const meta = entry.metadata ?? {};
+      // newData may carry parentMemberId (e.g. sub_member_remove_approved)
+      const newDataNested = (meta.newData as Record<string, unknown> | null | undefined) ?? {};
       const memberId = (
-        entry.metadata?.memberRecordId ??
-        entry.metadata?.memberId ??
-        entry.metadata?.parentMemberId
+        meta.memberRecordId ??                       // member_created, member_add_approved
+        meta.memberId ??                             // member_edit/delete_requested, member_deleted
+        meta.parentMemberId ??                       // sub_member_add/edit/remove_requested
+        newDataNested.parentMemberId ??              // sub_member_remove_approved (parentMemberId in newData)
+        // For approval outcome entries, entityId holds the member/parent record id
+        (MEMBER_ACTIONS.has(entry.action) ? meta.entityId :
+         entry.action.startsWith("sub_member_add_") ? meta.entityId : undefined)
       ) as string | undefined;
       if (memberId) {
         setSelectedMemberLoading(true);
@@ -872,8 +896,9 @@ export default function ActivityLogPage() {
                 </div>
               )}
 
-              {/* Edit diff — any action that carries previousData + newData */}
-              {selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData && (
+              {/* Edit diff — only for edit actions (not delete/remove, which also carry prev+next but aren't diffs) */}
+              {selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData &&
+               !/delete|remove|deleted|removed/.test(selectedEntry.action) && (
                 <div>
                   <h3 className="font-semibold text-sm mb-2">Changes Made</h3>
                   <MemberEditDiffSection
@@ -908,12 +933,16 @@ export default function ActivityLogPage() {
               {/* Sub-member identity */}
               {SUBMEMBER_ACTIONS.has(selectedEntry.action) && (() => {
                 const isEdit = selectedEntry.action.includes("edit");
+                // For remove/delete actions the sub-member data is in previousData (approved outcome)
+                // or flat in metadata (requested/direct). For add, data is in newData.
+                const isRemove = selectedEntry.action.includes("remove") || selectedEntry.action.includes("deleted");
                 const src = (
-                  isEdit
-                    ? selectedEntry.metadata?.previousData
-                    : selectedEntry.metadata?.newData
+                  isEdit ? selectedEntry.metadata?.previousData :
+                  isRemove ? (selectedEntry.metadata?.previousData ?? selectedEntry.metadata?.newData) :
+                  selectedEntry.metadata?.newData
                 ) as Record<string, unknown> | undefined;
-                const name = (src?.name ?? selectedEntry.metadata?.name) as string | undefined;
+                const prevData = selectedEntry.metadata?.previousData as Record<string, unknown> | undefined;
+                const name = (src?.name ?? prevData?.name ?? selectedEntry.metadata?.name) as string | undefined;
                 if (!name) return null;
                 return (
                   <div>

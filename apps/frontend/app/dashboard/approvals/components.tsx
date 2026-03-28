@@ -65,6 +65,7 @@ export function TransactionLiveSection({ tx }: { tx: Record<string, unknown> }) 
   const txCategory = tx.category as string;
   const isMembership = txCategory === "MEMBERSHIP";
   const isSponsorship = txCategory === "SPONSORSHIP";
+  const isExpense = txCategory === "EXPENSE" || txType === "CASH_OUT";
   const sponsorPurpose = typeof tx.sponsorPurpose === "string" ? tx.sponsorPurpose : null;
   const senderName = typeof tx.senderName === "string" ? tx.senderName : null;
   const receiverContact = typeof tx.senderPhone === "string" ? tx.senderPhone : null;
@@ -114,6 +115,12 @@ export function TransactionLiveSection({ tx }: { tx: Record<string, unknown> }) 
         <>
           <DetailRow label="Sent By" value={sponsorSenderName} />
           {sponsorSenderContact && <DetailRow label="Sender's Contact" value={sponsorSenderContact} />}
+        </>
+      )}
+      {isExpense && !isSponsorship && sponsorSenderName && (
+        <>
+          <DetailRow label="Sent By" value={sponsorSenderName} />
+          {sponsorSenderContact && <DetailRow label="Sender's Phone" value={sponsorSenderContact} />}
         </>
       )}
       {/* Received By — always shown */}

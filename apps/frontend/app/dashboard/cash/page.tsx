@@ -536,6 +536,10 @@ export default function CashPage() {
       errs.push("Receiver's Contact is required");
     if (formData.category === "SPONSORSHIP" && !formData.sponsorSenderName.trim())
       errs.push("Sender's Name is required for Sponsorship");
+    if (formData.type === "CASH_OUT" && categoryChosen && !formData.sponsorSenderName.trim())
+      errs.push("Sender's Name is required for Cash Out");
+    if (formData.type === "CASH_OUT" && categoryChosen && !formData.sponsorSenderContact.trim())
+      errs.push("Sender's Phone is required for Cash Out");
     return errs;
   }
 
@@ -597,7 +601,7 @@ export default function CashPage() {
       if (formData.sponsorId) payload.sponsorId = formData.sponsorId;
       if (formData.senderName) payload.senderName = formData.senderName;
       if (formData.senderPhone) payload.senderPhone = formData.senderPhone;
-      if (formData.category === "SPONSORSHIP") {
+      if (formData.category === "SPONSORSHIP" || formData.type === "CASH_OUT") {
         if (formData.sponsorSenderName) payload.sponsorSenderName = formData.sponsorSenderName;
         if (formData.sponsorSenderContact) payload.sponsorSenderContact = formData.sponsorSenderContact;
       }
@@ -1023,6 +1027,28 @@ export default function CashPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Sender's details — mandatory for Cash Out */}
+            {formData.type === "CASH_OUT" && (
+              <>
+                <div className="grid gap-1.5">
+                  <Label>Sender&apos;s Name *</Label>
+                  <Input
+                    placeholder="Name of person who authorized or made this payment"
+                    value={formData.sponsorSenderName}
+                    onChange={(e) => updateForm("sponsorSenderName", e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label>Sender&apos;s Phone *</Label>
+                  <Input
+                    placeholder="Phone number of the sender"
+                    value={formData.sponsorSenderContact}
+                    onChange={(e) => updateForm("sponsorSenderContact", e.target.value)}
+                  />
+                </div>
+              </>
+            )}
 
             {/* Received By (mandatory for all categories) */}
             <div className="grid gap-1.5">
@@ -1562,6 +1588,16 @@ export default function CashPage() {
                           <p className="text-xs text-muted-foreground">{detailTransaction.sponsorSenderContact}</p>
                         )}
                       </>
+                    )}
+                  </div>
+                )}
+                {/* Sent By — shown for Cash Out expense transactions */}
+                {detailTransaction.type === "CASH_OUT" && (detailTransaction.sponsorSenderName || detailTransaction.sponsorSenderContact) && (
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Sent By</p>
+                    <p className="mt-0.5">{detailTransaction.sponsorSenderName || "—"}</p>
+                    {detailTransaction.sponsorSenderContact && (
+                      <p className="text-xs text-muted-foreground">{detailTransaction.sponsorSenderContact}</p>
                     )}
                   </div>
                 )}

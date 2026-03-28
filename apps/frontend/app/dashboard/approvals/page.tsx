@@ -149,7 +149,8 @@ export default function ApprovalsPage() {
     setParentMemberData(null);
     setDetailOpen(true);
 
-    if (approval.action === "add_sub_member" || approval.action === "edit_sub_member") {
+    if (approval.action === "add_sub_member" || approval.action === "edit_sub_member" || approval.action === "remove_sub_member") {
+      // parentMemberId: in newData for add/remove, in previousData for edit
       const parentId = (
         approval.newData?.parentMemberId ?? approval.previousData?.parentMemberId
       ) as string | undefined;

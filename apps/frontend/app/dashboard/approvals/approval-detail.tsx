@@ -59,9 +59,11 @@ export function ApprovalDetail({
     const warningText =
       action.includes("delete_transaction")
         ? "This transaction will be permanently voided."
-        : action.includes("remove_sub_member")
+        : action === "remove_sub_member"
         ? "This sub-member will be removed."
         : "This will suspend the member account. Data is retained.";
+
+    const isSubMemberRemove = action === "remove_sub_member";
 
     return (
       <div className="space-y-3">
@@ -69,8 +71,30 @@ export function ApprovalDetail({
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>{warningText}</span>
         </div>
+
+        {isSubMemberRemove && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Parent Member
+            </p>
+            {parentMemberLoading ? (
+              <div className="rounded-md border px-3 py-4 space-y-2 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-4 bg-muted rounded w-3/4" />
+                ))}
+              </div>
+            ) : parentMemberData ? (
+              <MemberLiveSection member={parentMemberData} />
+            ) : (
+              <div className="rounded-md border px-3 py-3 text-sm text-muted-foreground">
+                Parent member details unavailable
+              </div>
+            )}
+          </div>
+        )}
+
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Current Record
+          {isSubMemberRemove ? "Sub-member Being Removed" : "Current Record"}
         </p>
         {(entityLoading || liveEntity) ? (
           <LiveEntityView

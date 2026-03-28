@@ -335,6 +335,7 @@ function TransactionDetailsPanel({
 }) {
   const isMembership = isMembershipCategory(txn.category);
   const isSponsorship = isSponsorshipCategory(txn.category);
+  const isExpense = txn.category === "EXPENSE" || txn.type === "CASH_OUT";
 
   return (
     <div className="space-y-4">
@@ -396,6 +397,18 @@ function TransactionDetailsPanel({
             <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
             {txn.sponsorSenderContact && (
               <DetailRow label="Contact" value={txn.sponsorSenderContact} />
+            )}
+          </div>
+        </div>
+      ) : isExpense && !isSponsorship && (txn.sponsorSenderName || txn.sponsorSenderContact) ? (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+            Sent By
+          </p>
+          <div className="rounded-md border px-3">
+            <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
+            {txn.sponsorSenderContact && (
+              <DetailRow label="Phone" value={txn.sponsorSenderContact} />
             )}
           </div>
         </div>
