@@ -275,7 +275,7 @@ pub async fn create_transaction(
 
     // Activity log
     let action_str = if is_operator {
-        "approval_submitted"
+        "transaction_requested"
     } else {
         "transaction_created"
     };

@@ -120,13 +120,12 @@ async fn list(
             let approval_type = approval_labels::read_metadata_approval_type(Some(&metadata))
                 .map(str::to_string)
                 .or_else(|| {
-                    if matches!(
-                        r.action.as_str(),
-                        "approval_approved"
-                            | "approval_rejected"
-                            | "membership_approved"
-                            | "membership_rejected"
-                    ) {
+                    let a = r.action.as_str();
+                    if a.starts_with("member_")
+                        || a.starts_with("submember_")
+                        || a == "membership_approved"
+                        || a == "membership_rejected"
+                    {
                         Some(approval_labels::MEMBERSHIP_APPROVAL.to_string())
                     } else {
                         None

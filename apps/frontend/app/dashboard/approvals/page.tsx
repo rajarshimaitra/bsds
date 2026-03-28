@@ -294,7 +294,7 @@ export default function ApprovalsPage() {
               }}
             >
               <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Approval Type" />
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All Types</SelectItem>

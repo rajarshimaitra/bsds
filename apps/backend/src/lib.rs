@@ -23,7 +23,7 @@ pub fn build_router(pool: SqlitePool) -> Router {
         .allow_origin(frontend_url.parse::<HeaderValue>().unwrap_or_else(|_| {
             "http://localhost:3000".parse().unwrap()
         }))
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE, Method::OPTIONS])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION, header::COOKIE])
         .allow_credentials(true);
 

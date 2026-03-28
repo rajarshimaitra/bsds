@@ -173,43 +173,59 @@ function actionBadgeClass(action: string): string {
 }
 
 const FINANCIAL_ACTIONS = new Set([
-  "transaction_created",
-  "transaction_created_pending",
-  "transaction_add_requested",
-  "transaction_approved",
-  "transaction_rejected",
-  "membership_created",
-  "membership_create_requested",
-  "membership_approved",
-  "membership_rejected",
+  // Consolidated strings (T7B-5)
+  "transaction_requested", "transaction_approved", "transaction_rejected",
+  // Legacy strings (current backend, pre-T7B-5)
+  "transaction_created", "transaction_created_pending",
+  // Membership / sponsor
+  "membership_approved", "membership_rejected",
   "sponsor_payment_received",
-  "razorpay_payment_captured",
 ]);
 
 function isFinancialAction(action: string): boolean {
   return FINANCIAL_ACTIONS.has(action);
 }
 
-function isMembershipApprovalType(approvalType: string | null | undefined): boolean {
-  return approvalType === "MEMBERSHIP_APPROVAL" || approvalType === "MEMBERSHIP_PAYMENT_APPROVAL";
-}
+const MEMBER_ACTIONS = new Set([
+  // Consolidated strings (T7B-5)
+  "member_add_requested", "member_add_approved", "member_add_rejected",
+  "member_edit_requested", "member_edit_approved", "member_edit_rejected",
+  "member_delete_requested", "member_delete_approved", "member_delete_rejected",
+  // Legacy strings (current backend, pre-T7B-5)
+  "member_created", "member_updated", "member_deleted", "member_delete_requested",
+]);
+
+const SUBMEMBER_ACTIONS = new Set([
+  // Consolidated strings (T7B-5)
+  "submember_add_requested", "submember_add_approved", "submember_add_rejected",
+  "submember_edit_requested", "submember_edit_approved", "submember_edit_rejected",
+  "submember_delete_requested", "submember_delete_approved", "submember_delete_rejected",
+  // Legacy strings (current backend, pre-T7B-5)
+  "sub_member_created", "sub_member_add_requested",
+  "sub_member_updated", "sub_member_edit_requested",
+  "sub_member_removed", "sub_member_remove_requested",
+]);
 
 const ACTIVITY_ACTIONS = [
+  // Auth
   "login_success", "login_failed", "password_changed",
-  "member_created", "member_add_requested", "member_updated", "member_edit_requested",
-  "member_deleted", "member_delete_requested",
-  "sub_member_created", "sub_member_add_requested", "sub_member_updated",
-  "sub_member_edit_requested", "sub_member_removed", "sub_member_remove_requested",
-  "transaction_created", "transaction_created_pending", "transaction_add_requested",
-  "transaction_updated", "transaction_edit_requested", "transaction_deleted",
-  "transaction_delete_requested", "transaction_approved", "transaction_rejected",
-  "membership_created", "membership_create_requested", "membership_approved",
-  "membership_rejected", "membership_expiry_reminder_sent", "membership_expired",
-  "approval_approved", "approval_rejected",
+  // Member
+  "member_add_requested", "member_add_approved", "member_add_rejected",
+  "member_edit_requested", "member_edit_approved", "member_edit_rejected",
+  "member_delete_requested", "member_delete_approved", "member_delete_rejected",
+  // Sub-member
+  "submember_add_requested", "submember_add_approved", "submember_add_rejected",
+  "submember_edit_requested", "submember_edit_approved", "submember_edit_rejected",
+  "submember_delete_requested", "submember_delete_approved", "submember_delete_rejected",
+  // Transaction
+  "transaction_requested", "transaction_approved", "transaction_rejected",
+  // Membership
+  "membership_approved", "membership_rejected",
+  // Sponsor
   "sponsor_created", "sponsor_updated", "sponsor_deleted",
   "sponsor_link_created", "sponsor_link_deactivated", "sponsor_payment_received",
-  "razorpay_payment_captured", "payment_amount_mismatch", "webhook_rejected_invalid_signature",
-  "receipt_generated", "whatsapp_notification_sent",
+  // Notification
+  "whatsapp_notification_sent",
 ];
 
 // ---------------------------------------------------------------------------
@@ -221,6 +237,60 @@ function DetailRow({ label, value, className }: { label: string; value: string; 
     <div className="grid grid-cols-1 gap-1 py-2 text-sm border-b border-muted/50 last:border-0 sm:grid-cols-[160px_1fr] sm:gap-2">
       <span className="text-muted-foreground shrink-0 text-xs font-medium sm:text-sm sm:font-normal">{label}</span>
       <span className={className ?? "font-medium break-words"}>{value || "—"}</span>
+    </div>
+  );
+}
+
+function DiffRow({ label, oldVal, newVal }: { label: string; oldVal: string; newVal: string }) {
+  const changed = oldVal !== newVal;
+  return (
+    <div className={`grid grid-cols-1 gap-1 py-2 text-sm border-b border-muted/50 last:border-0 sm:grid-cols-[160px_1fr] sm:gap-2 rounded ${changed ? "bg-amber-50/60" : ""}`}>
+      <span className="text-muted-foreground shrink-0 text-xs font-medium sm:text-sm sm:font-normal">{label}</span>
+      {changed ? (
+        <span className="flex items-center gap-1.5 flex-wrap">
+          <span className="line-through text-rose-500">{oldVal || "—"}</span>
+          <span className="text-muted-foreground text-xs">→</span>
+          <span className="font-medium text-emerald-700">{newVal || "—"}</span>
+        </span>
+      ) : (
+        <span className="font-medium break-words">{oldVal || "—"}</span>
+      )}
+    </div>
+  );
+}
+
+const MEMBER_DIFF_FIELDS: { key: string; label: string }[] = [
+  { key: "name", label: "Full Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "address", label: "Address" },
+];
+
+const SUBMEMBER_DIFF_FIELDS: { key: string; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "relation", label: "Relation" },
+  { key: "canLogin", label: "Can Login" },
+];
+
+function MemberEditDiffSection({
+  previousData,
+  newData,
+  isSub,
+}: {
+  previousData: Record<string, unknown>;
+  newData: Record<string, unknown>;
+  isSub: boolean;
+}) {
+  const fields = isSub ? SUBMEMBER_DIFF_FIELDS : MEMBER_DIFF_FIELDS;
+  return (
+    <div className="rounded-md border px-3">
+      {fields.map(({ key, label }) => {
+        const oldVal = String(previousData[key] ?? "");
+        const newVal = String(newData[key] ?? "");
+        return <DiffRow key={key} label={label} oldVal={oldVal} newVal={newVal} />;
+      })}
     </div>
   );
 }
@@ -497,10 +567,10 @@ export default function ActivityLogPage() {
         })
         .catch(() => {})
         .finally(() => setSelectedTxLoading(false));
-    } else if (isMembershipApprovalType(entry.approvalType) && !isFinancialAction(entry.action)) {
-      // member_created stores the UUID in memberRecordId (memberId is the formatted BSDS-YYYY-NNNN id)
-      // sub_member_* actions store the parent UUID in parentMemberId
-      // all other member actions store the UUID directly in memberId
+    } else if (
+      (MEMBER_ACTIONS.has(entry.action) || SUBMEMBER_ACTIONS.has(entry.action)) &&
+      !isFinancialAction(entry.action)
+    ) {
       const memberId = (
         entry.metadata?.memberRecordId ??
         entry.metadata?.memberId ??
@@ -618,7 +688,7 @@ export default function ActivityLogPage() {
                 <TableRow>
                   <TableHead>Date/Time</TableHead>
                   <TableHead>User</TableHead>
-                  <TableHead>Approval Type</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Action</TableHead>
                   <TableHead className="text-right">Details</TableHead>
                 </TableRow>
@@ -642,11 +712,9 @@ export default function ActivityLogPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {entry.approvalTypeLabel ? (
-                        <Badge variant="outline" className="text-xs">
-                          {entry.approvalTypeLabel}
-                        </Badge>
-                      ) : "—"}
+                      <Badge variant="outline" className="text-xs">
+                        {entry.approvalTypeLabel ?? "Activity"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`text-xs font-mono ${actionBadgeClass(entry.action)}`}>
@@ -715,11 +783,9 @@ export default function ActivityLogPage() {
                   {selectedEntry.direction === "INCOMING" ? "Incoming" : "Outgoing"}
                 </Badge>
               )}
-              {selectedEntry?.approvalTypeLabel && (
-                <Badge variant="outline" className="text-xs">
-                  {selectedEntry.approvalTypeLabel}
-                </Badge>
-              )}
+              <Badge variant="outline" className="text-xs">
+                {selectedEntry?.approvalTypeLabel ?? "Activity"}
+              </Badge>
             </DialogTitle>
             <DialogDescription>Full details of the selected activity log entry.</DialogDescription>
           </DialogHeader>
@@ -763,8 +829,22 @@ export default function ActivityLogPage() {
                 </div>
               </div>
 
+              {/* Edit diff — member_updated / sub_member_updated */}
+              {(selectedEntry.action === "member_updated" || selectedEntry.action === "sub_member_updated") &&
+                selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-2">Changes Made</h3>
+                  <MemberEditDiffSection
+                    previousData={selectedEntry.metadata.previousData as Record<string, unknown>}
+                    newData={selectedEntry.metadata.newData as Record<string, unknown>}
+                    isSub={selectedEntry.action === "sub_member_updated"}
+                  />
+                </div>
+              )}
+
               {/* Primary member (membership approval type, non-financial) */}
-              {isMembershipApprovalType(selectedEntry.approvalType) && !isFinancialAction(selectedEntry.action) && (
+              {(MEMBER_ACTIONS.has(selectedEntry.action) || SUBMEMBER_ACTIONS.has(selectedEntry.action)) &&
+              !isFinancialAction(selectedEntry.action) && (
                 <div>
                   <h3 className="font-semibold text-sm mb-3">Primary Member</h3>
                   {selectedMemberLoading ? (
@@ -778,6 +858,26 @@ export default function ActivityLogPage() {
                       Member details unavailable
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Sub-member details */}
+              {SUBMEMBER_ACTIONS.has(selectedEntry.action) &&
+                selectedEntry.metadata?.name && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-2">Sub-member Details</h3>
+                  <div className="rounded-md border px-3">
+                    <DetailRow label="Name" value={selectedEntry.metadata.name as string} />
+                    {selectedEntry.metadata.email && (
+                      <DetailRow label="Email" value={selectedEntry.metadata.email as string} />
+                    )}
+                    {selectedEntry.metadata.phone && (
+                      <DetailRow label="Phone" value={selectedEntry.metadata.phone as string} />
+                    )}
+                    {selectedEntry.metadata.relation && (
+                      <DetailRow label="Relation" value={selectedEntry.metadata.relation as string} />
+                    )}
+                  </div>
                 </div>
               )}
 

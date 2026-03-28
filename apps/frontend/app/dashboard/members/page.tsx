@@ -207,7 +207,7 @@ export default function MembersPage() {
     setIsMemberFormLoading(true);
     try {
       const res = await apiFetch(`/api/members/${selectedMember.id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(memberForm),
       });

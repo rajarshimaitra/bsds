@@ -175,7 +175,7 @@ pub async fn create_member(
         log_activity(
             pool,
             &requested_by.id,
-            "approval_submitted",
+            "member_add_requested",
             &format!(
                 "Operator {} submitted new member request for {}",
                 requested_by.name, data.name
@@ -308,7 +308,7 @@ pub async fn update_member(
         log_activity(
             pool,
             &requested_by.id,
-            "approval_submitted",
+            "member_edit_requested",
             &format!(
                 "Operator {} submitted edit request for member {}",
                 requested_by.name, existing.name
@@ -385,7 +385,21 @@ pub async fn update_member(
             "Admin {} updated member {}",
             requested_by.name, existing.name
         ),
-        Some(serde_json::json!({ "memberId": id })),
+        Some(serde_json::json!({
+            "memberId": id,
+            "previousData": {
+                "name": existing.name,
+                "email": existing.email,
+                "phone": existing.phone,
+                "address": existing.address,
+            },
+            "newData": {
+                "name": data.name.as_deref().unwrap_or(&existing.name),
+                "email": email_lower.as_deref().unwrap_or(&existing.email),
+                "phone": data.phone.as_deref().unwrap_or(&existing.phone),
+                "address": data.address.as_deref().unwrap_or(&existing.address),
+            },
+        })),
     )
     .await;
 
@@ -579,6 +593,10 @@ pub async fn add_sub_member(
             Some(serde_json::json!({
                 "approvalId": approval.id,
                 "parentMemberId": parent_member_id,
+                "name": name,
+                "email": email_lower,
+                "phone": phone,
+                "relation": relation,
             })),
         )
         .await;
@@ -651,6 +669,10 @@ pub async fn add_sub_member(
             "subMemberId": sm_id,
             "subMemberMemberId": sub_member_id,
             "parentMemberId": parent_member_id,
+            "name": name,
+            "email": email_lower,
+            "phone": phone,
+            "relation": relation,
         })),
     )
     .await;
@@ -740,6 +762,11 @@ pub async fn update_sub_member(
             Some(serde_json::json!({
                 "approvalId": approval.id,
                 "subMemberId": sub_member_id,
+                "parentMemberId": parent_member_id,
+                "name": existing.name,
+                "email": existing.email,
+                "phone": existing.phone,
+                "relation": existing.relation,
             })),
         )
         .await;
@@ -781,6 +808,20 @@ pub async fn update_sub_member(
         Some(serde_json::json!({
             "subMemberId": sub_member_id,
             "parentMemberId": parent_member_id,
+            "previousData": {
+                "name": existing.name,
+                "email": existing.email,
+                "phone": existing.phone,
+                "relation": existing.relation,
+                "canLogin": existing.can_login,
+            },
+            "newData": {
+                "name": name.unwrap_or(&existing.name),
+                "email": email_lower.as_deref().unwrap_or(&existing.email),
+                "phone": phone.unwrap_or(&existing.phone),
+                "relation": relation.unwrap_or(&existing.relation),
+                "canLogin": can_login.unwrap_or(existing.can_login),
+            },
         })),
     )
     .await;
@@ -858,6 +899,11 @@ pub async fn remove_sub_member(
             Some(serde_json::json!({
                 "approvalId": approval.id,
                 "subMemberId": sub_member_id,
+                "parentMemberId": parent_member_id,
+                "name": existing.name,
+                "email": existing.email,
+                "phone": existing.phone,
+                "relation": existing.relation,
             })),
         )
         .await;
@@ -886,6 +932,10 @@ pub async fn remove_sub_member(
         Some(serde_json::json!({
             "subMemberId": sub_member_id,
             "parentMemberId": parent_member_id,
+            "name": existing.name,
+            "email": existing.email,
+            "phone": existing.phone,
+            "relation": existing.relation,
         })),
     )
     .await;

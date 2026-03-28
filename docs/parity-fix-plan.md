@@ -440,38 +440,86 @@ Returns: full approval record including `previousData` and `newData` as parsed J
 
 ---
 
-#### T7B-5 — Audit all activity log action strings
-**File:** All service files
+#### T7B-5 — Consolidate all activity log action strings
+**Files:** `member_service.rs`, `approval_service.rs`, `transaction_service.rs`, `membership_service.rs`
 
-Systematically verify every service function emits the correct `action` string to `activity_logs`. The required action strings (must match DPS exactly for frontend filtering to work):
+Replace all ad-hoc action strings with the consolidated scheme below. The `action` column in `activity_logs` must use exactly these strings — the frontend activity-log filter dropdown depends on them.
 
-| Service function | Activity action string |
+**Key implementation notes:**
+- `approval_service::get_approval_activity_action()` currently only receives `entity_type`. It must also receive `approval.action` to distinguish sub-member vs primary-member flows within the same `MEMBER_*` entity type.
+- The generic `"approval_submitted"` string is retired — each call site in `member_service.rs` and `transaction_service.rs` must emit its own specific string.
+
+##### Member operations — `member_service.rs`
+
+| Context | Action string |
 |---|---|
-| `create_member` (ADMIN direct) | `"member_created"` |
-| `create_member` (OPERATOR → queue) | `"approval_submitted"` |
-| `update_member` (ADMIN direct) | `"member_updated"` |
-| `update_member` (OPERATOR → queue) | `"approval_submitted"` |
-| `delete_member` (ADMIN direct) | `"member_deleted"` |
-| `delete_member` (OPERATOR → queue) | `"approval_submitted"` |
-| `add_sub_member` | `"sub_member_added"` |
-| `update_sub_member` | `"sub_member_updated"` |
-| `remove_sub_member` | `"sub_member_removed"` |
-| `create_membership` (ADMIN direct) | `"membership_created"` |
-| `create_membership` (OPERATOR → queue) | `"approval_submitted"` |
+| `create_member` — OPERATOR submits (MEMBER_ADD) | `"member_add_requested"` |
+| `create_member` — ADMIN creates directly | `"member_add_approved"` |
+| `update_member` — OPERATOR submits (MEMBER_EDIT) | `"member_edit_requested"` |
+| `update_member` — ADMIN edits directly | `"member_edit_approved"` |
+| `delete_member` — OPERATOR submits (MEMBER_DELETE) | `"member_delete_requested"` |
+| `delete_member` — ADMIN deletes directly | `"member_delete_approved"` |
+
+##### Sub-member operations — `member_service.rs`
+
+| Context | Action string |
+|---|---|
+| `add_sub_member` — OPERATOR submits | `"submember_add_requested"` |
+| `add_sub_member` — ADMIN creates directly | `"submember_add_approved"` |
+| `update_sub_member` — OPERATOR submits | `"submember_edit_requested"` |
+| `update_sub_member` — ADMIN edits directly | `"submember_edit_approved"` |
+| `remove_sub_member` — OPERATOR submits | `"submember_delete_requested"` |
+| `remove_sub_member` — ADMIN removes directly | `"submember_delete_approved"` |
+
+##### Approval outcomes — `approval_service.rs` (`approve_entry` / `reject_entry`)
+
+The function must branch on both `entity_type` and `approval.action`:
+
+| entity_type | approval.action | Approved | Rejected |
+|---|---|---|---|
+| `MEMBER_ADD` | `add_member` | `"member_add_approved"` | `"member_add_rejected"` |
+| `MEMBER_ADD` | `add_sub_member` | `"submember_add_approved"` | `"submember_add_rejected"` |
+| `MEMBER_EDIT` | `edit_member` | `"member_edit_approved"` | `"member_edit_rejected"` |
+| `MEMBER_EDIT` | `edit_sub_member` | `"submember_edit_approved"` | `"submember_edit_rejected"` |
+| `MEMBER_DELETE` | `delete_member` | `"member_delete_approved"` | `"member_delete_rejected"` |
+| `MEMBER_DELETE` | `remove_sub_member` | `"submember_delete_approved"` | `"submember_delete_rejected"` |
+| `MEMBERSHIP` | any | `"membership_approved"` | `"membership_rejected"` |
+| `TRANSACTION` | any | `"transaction_approved"` | `"transaction_rejected"` |
+
+##### Transaction operations — `transaction_service.rs` and `membership_service.rs`
+
+| Context | Action string |
+|---|---|
+| `create_transaction` — OPERATOR submits (pending approval) | `"transaction_requested"` |
+| `create_transaction` — ADMIN creates directly | `"transaction_approved"` |
+| `reject_transaction` — ADMIN rejects directly | `"transaction_rejected"` |
+| `create_membership` transaction — OPERATOR submits | `"transaction_requested"` |
+| `create_membership` transaction — ADMIN creates directly | `"transaction_approved"` |
+
+##### Membership operations — `membership_service.rs`
+
+| Context | Action string |
+|---|---|
 | `approve_membership` | `"membership_approved"` |
 | `reject_membership` | `"membership_rejected"` |
-| `create_transaction` (ADMIN direct) | `"transaction_created"` |
-| `create_transaction` (OPERATOR → queue) | `"approval_submitted"` |
-| `reject_transaction` (admin rejects) | `"transaction_rejected"` |
-| `approve_entry` (any type) | `"approval_reviewed"` |
-| `reject_entry` (any type) | `"approval_reviewed"` |
-| `send_manual_whatsapp` | `"notification_sent"` (or `"notification_failed"`) |
+
+##### Other (unchanged)
+
+| Context | Action string |
+|---|---|
+| `send_manual_whatsapp` | `"whatsapp_notification_sent"` |
 | cron expiry check | `"cron_expiry_check"` |
-| cron reminder sent | `"notification_sent"` |
+| cron reminder sent | `"whatsapp_notification_sent"` |
 | login success | `"login_success"` |
 | login failure | `"login_failed"` |
 | logout | `"logout"` |
 | change password | `"password_changed"` |
+| `sponsor_created` | `"sponsor_created"` |
+| `sponsor_updated` | `"sponsor_updated"` |
+| `sponsor_deleted` | `"sponsor_deleted"` |
+| `sponsor_link_created` | `"sponsor_link_created"` |
+| `sponsor_link_deactivated` | `"sponsor_link_deactivated"` |
+| webhook sponsor payment | `"sponsor_payment_received"` |
 
 ---
 
@@ -517,7 +565,7 @@ Apply in:
 - [ ] Max-3 sub-members enforced — adding 4th returns error
 - [ ] `approve_membership` updates users.membership_status, users.membership_expiry, users.total_paid atomically
 - [ ] `TRANSACTION_CREATED` audit log entry emitted on every `create_transaction` call
-- [ ] All 24+ activity action strings emitted from correct service functions
+- [ ] All consolidated activity action strings emitted correctly per T7B-5 (member, submember, transaction, membership, approval outcomes, sponsor, notification)
 - [ ] `get_approval` returns full approval detail with parsed JSON data
 - [ ] Validation helpers exist and are called in member, transaction, membership services
 - [ ] `cargo build` succeeds

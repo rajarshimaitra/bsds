@@ -686,26 +686,32 @@ pub async fn seed_audit_logs(pool: &SqlitePool) {
 
 pub async fn seed_activity_logs(pool: &SqlitePool) {
     let activities = [
-        ("user_admin_01","login_success","User logged in",r#"{"ip":"127.0.0.1"}"#),
-        ("user_operator_01","login_success","User logged in",r#"{"ip":"127.0.0.1"}"#),
-        ("user_admin_01","member_created","Member Arijit Banerjee created",r#"{"memberId":"mr_member1_01"}"#),
-        ("user_operator_01","member_created","Member Priya Sen created",r#"{"memberId":"mr_member2_01"}"#),
-        ("user_operator_01","member_created","Member Debashis Roy created",r#"{"memberId":"mr_member3_01"}"#),
-        ("user_operator_01","member_created","Member Suchitra Ghosh created",r#"{"memberId":"mr_member4_01"}"#),
-        ("user_operator_01","member_created","Member Kaushik Dey created",r#"{"memberId":"mr_member5_01"}"#),
-        ("user_admin_01","transaction_approved","Transaction txn_01 approved",r#"{"txnId":"txn_01"}"#),
-        ("user_admin_01","transaction_approved","Transaction txn_05 approved",r#"{"txnId":"txn_05"}"#),
-        ("user_admin_01","transaction_approved","Transaction txn_06 approved",r#"{"txnId":"txn_06"}"#),
-        ("user_admin_01","transaction_approved","Transaction txn_07 approved",r#"{"txnId":"txn_07"}"#),
-        ("user_admin_01","approval_approved","Approval ap_04 approved",r#"{"approvalId":"ap_04"}"#),
-        ("user_admin_01","approval_approved","Approval ap_05 approved",r#"{"approvalId":"ap_05"}"#),
-        ("user_admin_01","approval_approved","Approval ap_06 approved",r#"{"approvalId":"ap_06"}"#),
-        ("user_admin_01","approval_approved","Approval ap_07 approved",r#"{"approvalId":"ap_07"}"#),
-        ("user_admin_01","approval_approved","Approval ap_08 approved",r#"{"approvalId":"ap_08"}"#),
-        ("user_admin_01","approval_rejected","Approval ap_09 rejected",r#"{"approvalId":"ap_09"}"#),
-        ("user_admin_01","approval_rejected","Approval ap_10 rejected",r#"{"approvalId":"ap_10"}"#),
-        ("user_operator_01","sponsor_created","Sponsor Balaram Das & Sons created",r#"{"sponsorId":"sponsor_01"}"#),
-        ("user_admin_01","sponsor_link_created","Sponsor link sl_01 created",r#"{"linkId":"sl_01"}"#),
+        // Auth
+        ("user_admin_01",   "login_success",           "Admin logged in",                                                          r#"{"ip":"127.0.0.1"}"#),
+        ("user_operator_01","login_success",            "Operator logged in",                                                       r#"{"ip":"127.0.0.1"}"#),
+        // Member add requests (operators)
+        ("user_operator_01","member_add_requested",     "Operator submitted new member request for Arijit Banerjee",               r#"{"approvalId":"ap_04","memberRecordId":"mr_member1_01"}"#),
+        ("user_operator_01","member_add_requested",     "Operator submitted new member request for Priya Sen",                     r#"{"approvalId":"ap_06","memberRecordId":"mr_member2_01"}"#),
+        ("user_operator_01","member_add_requested",     "Operator submitted new member request for Debashis Roy",                  r#"{"memberRecordId":"mr_member3_01"}"#),
+        ("user_operator_01","member_add_requested",     "Operator submitted new member request for Suchitra Ghosh",                r#"{"approvalId":"ap_02","memberRecordId":"mr_member4_01"}"#),
+        ("user_operator_01","member_add_requested",     "Operator submitted new member request for Kaushik Dey",                   r#"{"memberRecordId":"mr_member5_01"}"#),
+        // Transaction approved directly by admin
+        ("user_admin_01",   "transaction_approved",     "Admin approved transaction txn_01",                                       r#"{"transactionId":"txn_01","approvalType":"TRANSACTION_APPROVAL"}"#),
+        ("user_admin_01",   "transaction_approved",     "Admin approved transaction txn_06",                                       r#"{"transactionId":"txn_06","approvalType":"TRANSACTION_APPROVAL"}"#),
+        ("user_admin_01",   "transaction_approved",     "Admin approved transaction txn_07",                                       r#"{"transactionId":"txn_07","approvalType":"TRANSACTION_APPROVAL"}"#),
+        // Approval outcomes
+        ("user_admin_01",   "member_add_approved",      "Admin approved new member Arijit Banerjee",                               r#"{"approvalId":"ap_04","memberRecordId":"mr_member1_01"}"#),
+        ("user_admin_01",   "transaction_approved",     "Admin approved transaction txn_05 via approval ap_05",                    r#"{"approvalId":"ap_05","transactionId":"txn_05","approvalType":"TRANSACTION_APPROVAL"}"#),
+        ("user_admin_01",   "member_add_approved",      "Admin approved new member Priya Sen",                                     r#"{"approvalId":"ap_06","memberRecordId":"mr_member2_01"}"#),
+        ("user_admin_01",   "member_edit_approved",     "Admin approved edit request for member mr_member1_01",                    r#"{"approvalId":"ap_07","memberRecordId":"mr_member1_01"}"#),
+        ("user_admin_01",   "membership_approved",      "Admin approved membership for member mr_member5_01",                      r#"{"approvalId":"ap_08","memberRecordId":"mr_member5_01"}"#),
+        ("user_admin_01",   "member_delete_rejected",   "Admin rejected delete request for member mr_member3_01",                  r#"{"approvalId":"ap_09","memberRecordId":"mr_member3_01"}"#),
+        ("user_admin_01",   "transaction_rejected",     "Admin rejected transaction txn_14 via approval ap_10",                    r#"{"approvalId":"ap_10","transactionId":"txn_14","approvalType":"TRANSACTION_APPROVAL"}"#),
+        // Sub-member request
+        ("user_operator_01","submember_add_requested",  "Operator submitted sub-member add request for Priti Dey under Kaushik Dey",r#"{"approvalId":"ap_11","parentMemberId":"mr_member5_01","name":"Priti Dey","email":"priti.dey@bsds.club","phone":"9830100007","relation":"Daughter"}"#),
+        // Sponsors
+        ("user_operator_01","sponsor_created",          "Sponsor Balaram Das & Sons created",                                      r#"{"sponsorId":"sponsor_01"}"#),
+        ("user_admin_01",   "sponsor_link_created",     "Sponsor link sl_01 created",                                              r#"{"linkId":"sl_01"}"#),
     ];
 
     for (user_id, action, description, metadata) in activities {
