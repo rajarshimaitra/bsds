@@ -1,0 +1,24 @@
+# SQLite database files (stored in sqlite/ but not committed)
+sqlite/*.sqlite3
+sqlite/*.sqlite3-wal
+sqlite/*.sqlite3-shm
+
+# Frontend
+apps/frontend/.next/
+apps/frontend/node_modules
+apps/frontend/.env.local
+apps/frontend/.env
+
+# Backend
+apps/backend/target/
+apps/backend/.env
+apps/backend/.env.local
+
+# Env
+.env
+.env.local
+
+# AI artifacts
+.claude/
+.codex/
+.vscode/

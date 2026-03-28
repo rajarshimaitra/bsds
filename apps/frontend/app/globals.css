@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 215 45% 97%;
+    --foreground: 223 28% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 223 28% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 223 28% 18%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 45% 94%;
+    --secondary-foreground: 223 28% 18%;
+    --muted: 214 39% 94%;
+    --muted-foreground: 220 18% 44%;
+    --accent: 214 60% 92%;
+    --accent-foreground: 223 28% 18%;
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 221 83% 53%;
+    --radius: 1rem;
+    --chart-1: 221 83% 53%;
+    --chart-2: 187 84% 43%;
+    --chart-3: 260 74% 64%;
+    --chart-4: 28 96% 61%;
+    --chart-5: 145 63% 42%;
+  }
+
+  .dark {
+    --background: 224 43% 9%;
+    --foreground: 214 32% 91%;
+    --card: 225 35% 13%;
+    --card-foreground: 214 32% 91%;
+    --popover: 225 35% 13%;
+    --popover-foreground: 214 32% 91%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 224 43% 9%;
+    --secondary: 223 28% 18%;
+    --secondary-foreground: 214 32% 91%;
+    --muted: 223 28% 18%;
+    --muted-foreground: 218 16% 65%;
+    --accent: 222 25% 21%;
+    --accent-foreground: 214 32% 91%;
+    --destructive: 0 63% 46%;
+    --destructive-foreground: 214 32% 91%;
+    --border: 223 24% 23%;
+    --input: 223 24% 23%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 187 84% 43%;
+    --chart-3: 260 74% 64%;
+    --chart-4: 28 96% 61%;
+    --chart-5: 145 63% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 24rem),
+      radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 22rem),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 244, 255, 0.92));
+    font-feature-settings: "ss01" on, "cv02" on, "cv03" on;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 72%);
+    z-index: -1;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+
+  ::selection {
+    background: rgba(59, 130, 246, 0.18);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.45) rgba(148, 163, 184, 0.14);
+  }
+
+  *::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.12);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(56, 189, 248, 0.88), rgba(59, 130, 246, 0.82))
+      padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background:
+      linear-gradient(180deg, rgba(14, 165, 233, 0.96), rgba(37, 99, 235, 0.92))
+      padding-box;
+  }
+}
