@@ -184,6 +184,7 @@ pub async fn approve_entry(
         .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
     let next = approval.new_data.as_deref()
         .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
+    let is_txn = approval.entity_type == "TRANSACTION";
     log_activity(
         pool,
         &reviewed_by.id,
@@ -192,6 +193,7 @@ pub async fn approve_entry(
         Some(serde_json::json!({
             "approvalId": id,
             "entityId": log_entity_id,
+            "transactionId": if is_txn { Some(log_entity_id.as_str()) } else { None },
             "approvalType": approval_type,
             "direction": direction,
             "previousData": prev,
@@ -312,6 +314,7 @@ pub async fn reject_entry(
         .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
     let next = approval.new_data.as_deref()
         .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
+    let is_txn_reject = approval.entity_type == "TRANSACTION";
     log_activity(
         pool,
         &reviewed_by.id,
@@ -320,6 +323,7 @@ pub async fn reject_entry(
         Some(serde_json::json!({
             "approvalId": id,
             "entityId": approval.entity_id,
+            "transactionId": if is_txn_reject { Some(approval.entity_id.as_str()) } else { None },
             "approvalType": approval_type,
             "direction": direction,
             "previousData": prev,

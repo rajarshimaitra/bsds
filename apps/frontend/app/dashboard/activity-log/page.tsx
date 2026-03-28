@@ -375,7 +375,7 @@ function MemberProfileSection({ member }: { member: Record<string, unknown> }) {
 }
 
 // ---------------------------------------------------------------------------
-// Transaction details panel (same structure as audit log)
+// Transaction details panel — redesigned for clear field-by-field display
 // ---------------------------------------------------------------------------
 
 function TransactionDetailsPanel({
@@ -389,99 +389,113 @@ function TransactionDetailsPanel({
 }) {
   const isMembership = txn.category === "MEMBERSHIP";
   const isSponsorship = txn.category === "SPONSORSHIP";
+  const isIncoming = txn.type === "CASH_IN";
   const isExpense = txn.category === "EXPENSE" || txn.type === "CASH_OUT";
 
+  const statusColors: Record<string, string> = {
+    APPROVED: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    REJECTED: "border-rose-200 bg-rose-50 text-rose-700",
+    PENDING: "border-amber-200 bg-amber-50 text-amber-700",
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Core fields */}
-      <div className="rounded-md border px-3">
-        <div className="grid grid-cols-1 gap-1 py-2 text-sm border-b border-muted/50 sm:grid-cols-[160px_1fr] sm:gap-2">
-          <span className="text-muted-foreground shrink-0 text-xs font-medium sm:text-sm sm:font-normal">Category</span>
-          <Badge variant="outline" className={`text-xs w-fit ${
-            txn.type === "CASH_IN"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-rose-200 bg-rose-50 text-rose-700"
-          }`}>
-            {formatCategoryLabel(txn.category)}
+    <div className="space-y-5">
+      {/* ── Amount hero ─────────────────────────────────────────────────── */}
+      <div className={`rounded-xl border-2 p-4 ${isIncoming ? "border-emerald-200 bg-emerald-50/60" : "border-rose-200 bg-rose-50/60"}`}>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className={`text-xs ${isIncoming ? "border-emerald-300 bg-emerald-100 text-emerald-700" : "border-rose-300 bg-rose-100 text-rose-700"}`}>
+                {isIncoming ? "Incoming" : "Outgoing"}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {formatCategoryLabel(txn.category)}
+              </Badge>
+            </div>
+            <p className={`text-3xl font-bold tracking-tight ${isIncoming ? "text-emerald-700" : "text-rose-700"}`}>
+              {formatAmount(txn.amount)}
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className={`text-xs self-start ${statusColors[txn.approvalStatus] ?? "border-muted"}`}
+          >
+            {txn.approvalStatus}
           </Badge>
         </div>
-        <DetailRow
-          label="Amount"
-          value={formatAmount(txn.amount)}
-          className={`font-semibold ${txn.type === "CASH_IN" ? "text-emerald-700" : txn.type === "CASH_OUT" ? "text-rose-700" : ""}`}
-        />
-        <DetailRow label="Payment Mode" value={formatPaymentMode(txn.paymentMode)} />
-        {txn.approvalSource && (
-          <DetailRow
-            label="Approval Source"
-            value={txn.approvalSource === "RAZORPAY_WEBHOOK" ? "Razorpay Webhook" : "Manual"}
-          />
-        )}
-        {txn.receiptNumber && <DetailRow label="Receipt No." value={txn.receiptNumber} />}
-        {txn.purpose && <DetailRow label="Purpose" value={txn.purpose} />}
-        {txn.remark && <DetailRow label="Remark" value={txn.remark} />}
-        {txn.razorpayPaymentId && (
-          <DetailRow
-            label="Razorpay Payment ID"
-            value={txn.razorpayPaymentId}
-            className="font-mono text-xs font-medium break-all"
-          />
-        )}
+        <p className="text-xs text-muted-foreground mt-2">{formatDateTime(txn.createdAt)}</p>
       </div>
 
-      {/* Sent By (payer — inferred per category) */}
-      {isMembership ? (
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Sent By
-          </p>
-          <div className="rounded-md border px-3">
-            <DetailRow
-              label="Name"
-              value={(memberData?.name as string) || txn.member?.name || "—"}
-            />
-            {((memberData?.phone as string) || txn.member?.phone) && (
-              <DetailRow
-                label="Contact"
-                value={(memberData?.phone as string) || txn.member!.phone!}
-              />
-            )}
-          </div>
-        </div>
-      ) : isSponsorship && (txn.sponsorSenderName || txn.sponsorSenderContact) ? (
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Sent By
-          </p>
-          <div className="rounded-md border px-3">
-            <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
-            {txn.sponsorSenderContact && (
-              <DetailRow label="Contact" value={txn.sponsorSenderContact} />
-            )}
-          </div>
-        </div>
-      ) : isExpense && !isSponsorship && (txn.sponsorSenderName || txn.sponsorSenderContact) ? (
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Sent By
-          </p>
-          <div className="rounded-md border px-3">
-            <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
-            {txn.sponsorSenderContact && (
-              <DetailRow label="Phone" value={txn.sponsorSenderContact} />
-            )}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Received By (collector — always shown) */}
+      {/* ── Payment details ──────────────────────────────────────────────── */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-          Received By
+          Payment Details
+        </p>
+        <div className="rounded-md border px-3">
+          <DetailRow label="Payment Mode" value={formatPaymentMode(txn.paymentMode)} />
+          {txn.receiptNumber && <DetailRow label="Receipt No." value={txn.receiptNumber} />}
+          {txn.purpose && <DetailRow label="Purpose" value={txn.purpose} />}
+          {isSponsorship && txn.sponsorPurpose && (
+            <DetailRow label="Sponsor Purpose" value={formatSponsorPurpose(txn.sponsorPurpose)} />
+          )}
+          {txn.remark && <DetailRow label="Remark" value={txn.remark} />}
+          {txn.approvalSource && (
+            <DetailRow
+              label="Approval Source"
+              value={txn.approvalSource === "RAZORPAY_WEBHOOK" ? "Razorpay Webhook" : "Manual"}
+            />
+          )}
+          {txn.razorpayPaymentId && (
+            <DetailRow
+              label="Razorpay ID"
+              value={txn.razorpayPaymentId}
+              className="font-mono text-xs font-medium break-all"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* ── Sent By (payer) — always shown ──────────────────────────────── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          Sent By
+        </p>
+        <div className="rounded-md border px-3">
+          {isMembership ? (
+            <>
+              <DetailRow
+                label="Name"
+                value={(memberData?.name as string) || txn.member?.name || "—"}
+              />
+              <DetailRow
+                label="Contact"
+                value={(memberData?.phone as string) || txn.member?.phone || "—"}
+              />
+            </>
+          ) : isSponsorship ? (
+            <>
+              <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
+              <DetailRow label="Contact" value={txn.sponsorSenderContact || "—"} />
+            </>
+          ) : (
+            <>
+              <DetailRow label="Name" value={txn.sponsorSenderName || "—"} />
+              {txn.sponsorSenderContact && (
+                <DetailRow label="Phone" value={txn.sponsorSenderContact} />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Collected By / Received By — always shown ───────────────────── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+          {isIncoming ? "Collected By" : "Received By"}
         </p>
         <div className="rounded-md border px-3">
           <DetailRow label="Name" value={txn.senderName || "—"} />
-          {txn.senderPhone && <DetailRow label="Contact" value={txn.senderPhone} />}
+          <DetailRow label="Phone" value={txn.senderPhone || "—"} />
           {txn.senderUpiId && (
             <DetailRow label="UPI ID" value={txn.senderUpiId} className="font-mono text-xs font-medium" />
           )}
@@ -492,11 +506,11 @@ function TransactionDetailsPanel({
         </div>
       </div>
 
-      {/* Membership: primary member profile */}
+      {/* ── Member account (MEMBERSHIP) ──────────────────────────────────── */}
       {isMembership && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Primary Member
+            Member Account
           </p>
           {memberLoading ? (
             <div className="rounded-md border px-3 py-4 space-y-2 animate-pulse">
@@ -517,11 +531,11 @@ function TransactionDetailsPanel({
         </div>
       )}
 
-      {/* Sponsorship: sponsor details */}
+      {/* ── Sponsor account (SPONSORSHIP) ────────────────────────────────── */}
       {isSponsorship && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Sponsor Details
+            Sponsor Account
           </p>
           <div className="rounded-md border px-3">
             {txn.sponsor ? (
@@ -532,9 +546,6 @@ function TransactionDetailsPanel({
               </>
             ) : (
               <div className="py-3 text-sm text-muted-foreground">Sponsor details unavailable</div>
-            )}
-            {txn.sponsorPurpose && (
-              <DetailRow label="Sponsor Purpose" value={formatSponsorPurpose(txn.sponsorPurpose)} />
             )}
           </div>
         </div>
@@ -597,7 +608,12 @@ export default function ActivityLogPage() {
     setSelectedTxLoading(false);
     setSelectedMemberLoading(false);
 
-    const transactionId = entry.metadata?.transactionId as string | undefined;
+    // transaction_approved/rejected logged via approval_service store the ID as entityId;
+    // transaction_requested and direct paths use transactionId — fall back to entityId
+    const transactionId = (
+      entry.metadata?.transactionId ??
+      (isFinancialAction(entry.action) ? entry.metadata?.entityId : undefined)
+    ) as string | undefined;
     if (isFinancialAction(entry.action) && transactionId) {
       setSelectedTxLoading(true);
       apiFetch(`/api/transactions/${transactionId}`)
