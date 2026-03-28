@@ -154,6 +154,10 @@ export interface ApprovalsResponse {
 export function entityApiUrl(entityType: string, entityId: string, action: string): string | null {
   if (entityId === PLACEHOLDER_ID) return null;
   if (entityType === "TRANSACTION") return `/api/transactions/${entityId}`;
+  if (entityType === "MEMBER_ADD") {
+    if (action === "add_sub_member") return null;
+    return `/api/members/${entityId}`;
+  }
   if (entityType === "MEMBER_EDIT") {
     if (action === "edit_sub_member") return null;
     return `/api/members/${entityId}`;

@@ -185,6 +185,12 @@ pub async fn create_member(
                 "memberEmail": email,
                 "memberId": placeholder.id,
                 "approvalType": approval_labels::MEMBERSHIP_APPROVAL,
+                "newData": {
+                    "name": data.name,
+                    "email": email,
+                    "phone": data.phone,
+                    "address": data.address,
+                },
             })),
         )
         .await;
@@ -248,9 +254,40 @@ pub async fn create_member(
             "memberEmail": email,
             "memberRecordId": member.id,
             "approvalType": approval_labels::MEMBERSHIP_APPROVAL,
+            "newData": {
+                "name": data.name,
+                "email": email,
+                "phone": data.phone,
+                "address": data.address,
+            },
         })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_ADD".to_string(),
+            entity_id: member.id.clone(),
+            action: "add_member".to_string(),
+            previous_data: None,
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": data.name,
+                    "email": email,
+                    "phone": data.phone,
+                    "address": data.address,
+                }))
+                .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),
@@ -316,6 +353,8 @@ pub async fn update_member(
             Some(serde_json::json!({
                 "approvalId": approval.id,
                 "memberId": id,
+                "previousData": previous_data,
+                "newData": new_data,
             })),
         )
         .await;
@@ -402,6 +441,39 @@ pub async fn update_member(
         })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_EDIT".to_string(),
+            entity_id: id.to_string(),
+            action: "edit_member".to_string(),
+            previous_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": existing.name,
+                    "email": existing.email,
+                    "phone": existing.phone,
+                    "address": existing.address,
+                }))
+                .unwrap_or_default(),
+            ),
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": data.name.as_deref().unwrap_or(&existing.name),
+                    "email": email_lower.as_deref().unwrap_or(&existing.email),
+                    "phone": data.phone.as_deref().unwrap_or(&existing.phone),
+                    "address": data.address.as_deref().unwrap_or(&existing.address),
+                }))
+                .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),
@@ -490,6 +562,33 @@ pub async fn delete_member(
         Some(serde_json::json!({ "memberId": id })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_DELETE".to_string(),
+            entity_id: id.to_string(),
+            action: "delete_member".to_string(),
+            previous_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "id": existing.id,
+                    "name": existing.name,
+                    "email": existing.email,
+                }))
+                .unwrap_or_default(),
+            ),
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({ "membershipStatus": "SUSPENDED" }))
+                    .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),
@@ -593,10 +692,12 @@ pub async fn add_sub_member(
             Some(serde_json::json!({
                 "approvalId": approval.id,
                 "parentMemberId": parent_member_id,
-                "name": name,
-                "email": email_lower,
-                "phone": phone,
-                "relation": relation,
+                "newData": {
+                    "name": name,
+                    "email": email_lower,
+                    "phone": phone,
+                    "relation": relation,
+                },
             })),
         )
         .await;
@@ -669,13 +770,42 @@ pub async fn add_sub_member(
             "subMemberId": sm_id,
             "subMemberMemberId": sub_member_id,
             "parentMemberId": parent_member_id,
-            "name": name,
-            "email": email_lower,
-            "phone": phone,
-            "relation": relation,
+            "newData": {
+                "name": name,
+                "email": email_lower,
+                "phone": phone,
+                "relation": relation,
+            },
         })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_ADD".to_string(),
+            entity_id: parent_member_id.to_string(),
+            action: "add_sub_member".to_string(),
+            previous_data: None,
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": name,
+                    "email": email_lower,
+                    "phone": phone,
+                    "relation": relation,
+                    "parentMemberId": parent_member_id,
+                    "parentUserId": user_id,
+                }))
+                .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),
@@ -763,10 +893,8 @@ pub async fn update_sub_member(
                 "approvalId": approval.id,
                 "subMemberId": sub_member_id,
                 "parentMemberId": parent_member_id,
-                "name": existing.name,
-                "email": existing.email,
-                "phone": existing.phone,
-                "relation": existing.relation,
+                "previousData": previous_data,
+                "newData": new_data,
             })),
         )
         .await;
@@ -825,6 +953,42 @@ pub async fn update_sub_member(
         })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_EDIT".to_string(),
+            entity_id: sub_member_id.to_string(),
+            action: "edit_sub_member".to_string(),
+            previous_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": existing.name,
+                    "email": existing.email,
+                    "phone": existing.phone,
+                    "relation": existing.relation,
+                    "canLogin": existing.can_login,
+                }))
+                .unwrap_or_default(),
+            ),
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "name": name.unwrap_or(&existing.name),
+                    "email": email_lower.as_deref().unwrap_or(&existing.email),
+                    "phone": phone.unwrap_or(&existing.phone),
+                    "relation": relation.unwrap_or(&existing.relation),
+                    "canLogin": can_login.unwrap_or(existing.can_login),
+                    "parentMemberId": parent_member_id,
+                }))
+                .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),
@@ -939,6 +1103,40 @@ pub async fn remove_sub_member(
         })),
     )
     .await;
+
+    if let Ok(appr) = approvals::create(
+        pool,
+        &approvals::CreateApprovalData {
+            entity_type: "MEMBER_DELETE".to_string(),
+            entity_id: sub_member_id.to_string(),
+            action: "remove_sub_member".to_string(),
+            previous_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "id": existing.id,
+                    "memberId": existing.member_id,
+                    "name": existing.name,
+                    "email": existing.email,
+                    "phone": existing.phone,
+                    "relation": existing.relation,
+                    "parentMemberId": parent_member_id,
+                }))
+                .unwrap_or_default(),
+            ),
+            new_data: Some(
+                serde_json::to_string(&serde_json::json!({
+                    "deleted": true,
+                    "parentMemberId": parent_member_id,
+                }))
+                .unwrap_or_default(),
+            ),
+            requested_by_id: requested_by.id.clone(),
+            status: "APPROVED".to_string(),
+        },
+    )
+    .await
+    {
+        let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+    }
 
     Ok(MutationResult {
         action: "direct".to_string(),

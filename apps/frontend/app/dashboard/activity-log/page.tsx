@@ -259,6 +259,38 @@ function DiffRow({ label, oldVal, newVal }: { label: string; oldVal: string; new
   );
 }
 
+const ADD_MEMBER_FIELDS: { key: string; label: string }[] = [
+  { key: "name", label: "Full Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "address", label: "Address" },
+];
+
+const ADD_SUBMEMBER_FIELDS: { key: string; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "relation", label: "Relation" },
+];
+
+function AddDetailsSection({
+  newData,
+  isSub,
+}: {
+  newData: Record<string, unknown>;
+  isSub: boolean;
+}) {
+  const fields = isSub ? ADD_SUBMEMBER_FIELDS : ADD_MEMBER_FIELDS;
+  return (
+    <div className="rounded-md border px-3">
+      {fields.map(({ key, label }) => {
+        const val = String(newData[key] ?? "");
+        return <DetailRow key={key} label={label} value={val} />;
+      })}
+    </div>
+  );
+}
+
 const MEMBER_DIFF_FIELDS: { key: string; label: string }[] = [
   { key: "name", label: "Full Name" },
   { key: "email", label: "Email" },
@@ -829,15 +861,25 @@ export default function ActivityLogPage() {
                 </div>
               </div>
 
-              {/* Edit diff — member_updated / sub_member_updated */}
-              {(selectedEntry.action === "member_updated" || selectedEntry.action === "sub_member_updated") &&
-                selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData && (
+              {/* Add details — any action that carries newData but no previousData */}
+              {selectedEntry.metadata?.newData && !selectedEntry.metadata?.previousData && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-2">Added Details</h3>
+                  <AddDetailsSection
+                    newData={selectedEntry.metadata.newData as Record<string, unknown>}
+                    isSub={selectedEntry.action.includes("sub_member") || selectedEntry.action.includes("submember")}
+                  />
+                </div>
+              )}
+
+              {/* Edit diff — any action that carries previousData + newData */}
+              {selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData && (
                 <div>
                   <h3 className="font-semibold text-sm mb-2">Changes Made</h3>
                   <MemberEditDiffSection
                     previousData={selectedEntry.metadata.previousData as Record<string, unknown>}
                     newData={selectedEntry.metadata.newData as Record<string, unknown>}
-                    isSub={selectedEntry.action === "sub_member_updated"}
+                    isSub={selectedEntry.action.includes("sub_member") || selectedEntry.action.includes("submember")}
                   />
                 </div>
               )}
@@ -846,7 +888,9 @@ export default function ActivityLogPage() {
               {(MEMBER_ACTIONS.has(selectedEntry.action) || SUBMEMBER_ACTIONS.has(selectedEntry.action)) &&
               !isFinancialAction(selectedEntry.action) && (
                 <div>
-                  <h3 className="font-semibold text-sm mb-3">Primary Member</h3>
+                  <h3 className="font-semibold text-sm mb-3">
+                    {SUBMEMBER_ACTIONS.has(selectedEntry.action) ? "Parent Member" : "Primary Member"}
+                  </h3>
                   {selectedMemberLoading ? (
                     <div className="rounded-md border px-3 py-4 space-y-2 animate-pulse">
                       {[1, 2, 3].map((i) => <div key={i} className="h-4 bg-muted rounded w-3/4" />)}
@@ -861,25 +905,28 @@ export default function ActivityLogPage() {
                 </div>
               )}
 
-              {/* Sub-member details */}
-              {SUBMEMBER_ACTIONS.has(selectedEntry.action) &&
-                selectedEntry.metadata?.name && (
-                <div>
-                  <h3 className="font-semibold text-sm mb-2">Sub-member Details</h3>
-                  <div className="rounded-md border px-3">
-                    <DetailRow label="Name" value={selectedEntry.metadata.name as string} />
-                    {selectedEntry.metadata.email && (
-                      <DetailRow label="Email" value={selectedEntry.metadata.email as string} />
-                    )}
-                    {selectedEntry.metadata.phone && (
-                      <DetailRow label="Phone" value={selectedEntry.metadata.phone as string} />
-                    )}
-                    {selectedEntry.metadata.relation && (
-                      <DetailRow label="Relation" value={selectedEntry.metadata.relation as string} />
-                    )}
+              {/* Sub-member identity */}
+              {SUBMEMBER_ACTIONS.has(selectedEntry.action) && (() => {
+                const isEdit = selectedEntry.action.includes("edit");
+                const src = (
+                  isEdit
+                    ? selectedEntry.metadata?.previousData
+                    : selectedEntry.metadata?.newData
+                ) as Record<string, unknown> | undefined;
+                const name = (src?.name ?? selectedEntry.metadata?.name) as string | undefined;
+                if (!name) return null;
+                return (
+                  <div>
+                    <h3 className="font-semibold text-sm mb-2">Sub-member</h3>
+                    <div className="rounded-md border px-3">
+                      <DetailRow label="Name" value={name} />
+                      {src?.relation && <DetailRow label="Relation" value={src.relation as string} />}
+                      {src?.email && <DetailRow label="Email" value={src.email as string} />}
+                      {src?.phone && <DetailRow label="Phone" value={src.phone as string} />}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Financial transaction details */}
               {isFinancialAction(selectedEntry.action) && (

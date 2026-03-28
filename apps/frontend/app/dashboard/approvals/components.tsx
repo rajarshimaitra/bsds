@@ -227,7 +227,7 @@ export function LiveEntityView({
   }
   if (!liveEntity) return null;
   if (entityType === "TRANSACTION") return <TransactionLiveSection tx={liveEntity} />;
-  if (entityType === "MEMBER_EDIT" || entityType === "MEMBER_DELETE") return <MemberLiveSection member={liveEntity} />;
+  if (entityType === "MEMBER_ADD" || entityType === "MEMBER_EDIT" || entityType === "MEMBER_DELETE") return <MemberLiveSection member={liveEntity} />;
   if (entityType === "MEMBERSHIP") return <MembershipPlanSection ms={liveEntity} />;
   return null;
 }

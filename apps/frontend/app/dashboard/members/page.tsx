@@ -925,6 +925,11 @@ export default function MembersPage() {
                                     <p className="truncate text-sm text-muted-foreground">
                                       {sm.email}
                                     </p>
+                                    {sm.phone && (
+                                      <p className="truncate text-sm text-muted-foreground">
+                                        {sm.phone}
+                                      </p>
+                                    )}
                                   </div>
                                   <div className="flex shrink-0 gap-1">
                                     <Button

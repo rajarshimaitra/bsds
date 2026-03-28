@@ -161,7 +161,7 @@ pub async fn approve_entry(
     }
 
     // Activity log
-    let action = get_approval_activity_action(&approval.entity_type, "approved");
+    let action = get_approval_activity_action(&approval.entity_type, &approval.action, "approved");
     let desc = if approval.entity_type == "TRANSACTION" {
         format!(
             "Admin {} approved transaction {} ({})",
@@ -180,6 +180,10 @@ pub async fn approve_entry(
     let direction = approval_labels::direction_from_transaction_type(
         approval_tx.as_ref().map(|tx| tx.r#type.as_str()),
     );
+    let prev = approval.previous_data.as_deref()
+        .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
+    let next = approval.new_data.as_deref()
+        .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
     log_activity(
         pool,
         &reviewed_by.id,
@@ -190,6 +194,8 @@ pub async fn approve_entry(
             "entityId": log_entity_id,
             "approvalType": approval_type,
             "direction": direction,
+            "previousData": prev,
+            "newData": next,
         })),
     )
     .await;
@@ -283,7 +289,7 @@ pub async fn reject_entry(
     }
 
     // Activity log
-    let action = get_approval_activity_action(&approval.entity_type, "rejected");
+    let action = get_approval_activity_action(&approval.entity_type, &approval.action, "rejected");
     let desc = if approval.entity_type == "TRANSACTION" {
         format!(
             "Admin {} rejected transaction {} ({})",
@@ -302,6 +308,10 @@ pub async fn reject_entry(
     let direction = approval_labels::direction_from_transaction_type(
         rejected_tx.as_ref().map(|tx| tx.r#type.as_str()),
     );
+    let prev = approval.previous_data.as_deref()
+        .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
+    let next = approval.new_data.as_deref()
+        .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok());
     log_activity(
         pool,
         &reviewed_by.id,
@@ -312,6 +322,8 @@ pub async fn reject_entry(
             "entityId": approval.entity_id,
             "approvalType": approval_type,
             "direction": direction,
+            "previousData": prev,
+            "newData": next,
         })),
     )
     .await;
@@ -727,11 +739,17 @@ async fn handle_membership_approve(
 // Helpers
 // ---------------------------------------------------------------------------
 
-fn get_approval_activity_action(entity_type: &str, outcome: &str) -> String {
-    if entity_type == "TRANSACTION" {
-        format!("transaction_{outcome}")
-    } else {
-        format!("approval_{outcome}")
+fn get_approval_activity_action(entity_type: &str, action: &str, outcome: &str) -> String {
+    match (entity_type, action) {
+        ("TRANSACTION", _)                    => format!("transaction_{outcome}"),
+        ("MEMBERSHIP",  _)                    => format!("membership_{outcome}"),
+        ("MEMBER_ADD",  "add_sub_member")     => format!("sub_member_add_{outcome}"),
+        ("MEMBER_ADD",  _)                    => format!("member_add_{outcome}"),
+        ("MEMBER_EDIT", "edit_sub_member")    => format!("sub_member_edit_{outcome}"),
+        ("MEMBER_EDIT", _)                    => format!("member_edit_{outcome}"),
+        ("MEMBER_DELETE","remove_sub_member") => format!("sub_member_remove_{outcome}"),
+        ("MEMBER_DELETE", _)                  => format!("member_delete_{outcome}"),
+        _                                     => format!("approval_{outcome}"),
     }
 }
 

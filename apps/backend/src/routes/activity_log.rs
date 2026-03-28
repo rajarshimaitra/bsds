@@ -121,11 +121,7 @@ async fn list(
                 .map(str::to_string)
                 .or_else(|| {
                     let a = r.action.as_str();
-                    if a.starts_with("member_")
-                        || a.starts_with("submember_")
-                        || a == "membership_approved"
-                        || a == "membership_rejected"
-                    {
+                    if a.contains("member") {
                         Some(approval_labels::MEMBERSHIP_APPROVAL.to_string())
                     } else {
                         None

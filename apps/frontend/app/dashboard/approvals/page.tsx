@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { apiFetcher, revalidateApiPrefixes } from "@/lib/hooks/use-api";
@@ -148,8 +149,10 @@ export default function ApprovalsPage() {
     setParentMemberData(null);
     setDetailOpen(true);
 
-    if (approval.action === "add_sub_member") {
-      const parentId = approval.newData?.parentMemberId as string | undefined;
+    if (approval.action === "add_sub_member" || approval.action === "edit_sub_member") {
+      const parentId = (
+        approval.newData?.parentMemberId ?? approval.previousData?.parentMemberId
+      ) as string | undefined;
       if (parentId) {
         setParentMemberLoading(true);
         apiFetch(`/api/members/${parentId}`)
@@ -283,59 +286,60 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-4 pb-4">
-          <div className="flex flex-wrap gap-3 items-center">
-            <Select
-              value={approvalTypeFilter}
-              onValueChange={(value) => {
-                setApprovalTypeFilter(value);
-                void setSize(1);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Types</SelectItem>
-                {Object.entries(APPROVAL_TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            void setSize(1);
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="PENDING" className="gap-1.5">
+              Pending
+              {pendingCount > 0 && (
+                <span className="ml-1 rounded-full bg-primary text-primary-foreground text-xs px-1.5 py-0.5 leading-none">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="APPROVED">Approved</TabsTrigger>
+            <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
+            <TabsTrigger value="ALL">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value);
-                void setSize(1);
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="ALL">All Statuses</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <span className="text-sm text-muted-foreground w-full sm:ml-auto sm:w-auto">
-              {total} result{total !== 1 ? "s" : ""}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex items-center gap-3">
+          <Select
+            value={approvalTypeFilter}
+            onValueChange={(value) => {
+              setApprovalTypeFilter(value);
+              void setSize(1);
+            }}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Categories</SelectItem>
+              {Object.entries(APPROVAL_TYPE_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {total} result{total !== 1 ? "s" : ""}
+          </span>
+        </div>
+      </div>
 
       {/* Table */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            {statusFilter === "PENDING" ? "Pending Approvals" : "Approval History"}
+            {statusFilter === "PENDING" ? "Pending Approvals" : statusFilter === "APPROVED" ? "Approved" : statusFilter === "REJECTED" ? "Rejected" : "All Approvals"}
           </CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">

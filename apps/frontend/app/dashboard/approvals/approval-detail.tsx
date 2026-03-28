@@ -94,6 +94,7 @@ export function ApprovalDetail({
 
   // ---- EDIT: diff + full current record ----
   if (isEdit) {
+    const isSubMemberEdit = action === "edit_sub_member";
     const changedKeys = allKeys.filter(
       (k) => String(prev[k] ?? "") !== String(next[k] ?? "")
     );
@@ -101,6 +102,27 @@ export function ApprovalDetail({
 
     return (
       <div className="space-y-5">
+        {isSubMemberEdit && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Parent Member
+            </p>
+            {parentMemberLoading ? (
+              <div className="rounded-md border px-3 py-4 space-y-2 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-4 bg-muted rounded w-3/4" />
+                ))}
+              </div>
+            ) : parentMemberData ? (
+              <MemberLiveSection member={parentMemberData} />
+            ) : (
+              <div className="rounded-md border px-3 py-3 text-sm text-muted-foreground">
+                Parent member details unavailable
+              </div>
+            )}
+          </div>
+        )}
+
         {changedKeys.length > 0 && (
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">

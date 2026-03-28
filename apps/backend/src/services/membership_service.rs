@@ -299,6 +299,37 @@ pub async fn create_membership(
         approval_id = Some(approval.id);
     }
 
+    // Admin direct-approval: create an auto-approved record so it appears in the approval queue history.
+    if is_admin {
+        let new_data_json = serde_json::to_string(&serde_json::json!({
+            "type": "CASH_IN",
+            "category": "MEMBERSHIP",
+            "amount": data.amount,
+            "paymentMode": "CASH",
+            "purpose": tx.purpose,
+            "membershipType": if includes_subscription { subscription_type_str.clone() } else { "ANNUAL".to_string() },
+            "feeType": effective_fee_type,
+        }))
+        .unwrap_or_default();
+        if let Ok(appr) = approvals::create(
+            pool,
+            &approvals::CreateApprovalData {
+                entity_type: "TRANSACTION".to_string(),
+                entity_id: tx.id.clone(),
+                action: "add_transaction".to_string(),
+                previous_data: None,
+                new_data: Some(new_data_json),
+                requested_by_id: requested_by.id.clone(),
+                status: "APPROVED".to_string(),
+            },
+        )
+        .await
+        {
+            let _ = approvals::update_status(pool, &appr.id, "APPROVED", &requested_by.id, None).await;
+            approval_id = Some(appr.id);
+        }
+    }
+
     // Admin: activate membership immediately
     if is_admin {
         let details = TransactionMembershipDetails {
