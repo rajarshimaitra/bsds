@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import NavBar from "@/components/landing/NavBar";
 
@@ -10,15 +11,6 @@ export const metadata: Metadata = {
 
 /* ─── Data ─────────────────────────────────────────────────────────────── */
 
-const themes = [
-  { year: "2025", theme: "Boro Durga — Revival of the Giant Idol", highlight: true },
-  { year: "2024", theme: "Universal Shakti — The Power that Connects All" },
-  { year: "2023", theme: "Jyoti" },
-  { year: "2022", theme: "Bhubaneswari" },
-  { year: "2017", theme: "Mahishmati Palace (Baahubali-inspired)" },
-  { year: "2016", theme: "Idol with 1,000 Hands Slaying 100 Demons" },
-  { year: "2015", theme: "World's Tallest Durga Idol — 88 Feet", highlight: true },
-];
 
 const activities = [
   {
@@ -68,12 +60,37 @@ const heritageTimeline = [
   {
     year: "2015",
     label: "Record-Breaking Idol",
-    detail: "World's tallest Durga idol at 88 feet, sculpted by Mintu Pal. Listed in Limca, Indian, and Asia Books of Records.",
+    detail: "World's tallest Durga idol at 88 feet, sculpted by Mintu Pal. Listed in Limca, Indian, and Asia Books of Records. Theme: World's Tallest Durga Idol — 88 Feet.",
+  },
+  {
+    year: "2016",
+    label: "Pandal Theme",
+    detail: "Idol with 1,000 Hands Slaying 100 Demons.",
+  },
+  {
+    year: "2017",
+    label: "Pandal Theme",
+    detail: "Mahishmati Palace (Baahubali-inspired).",
   },
   {
     year: "2021",
     label: "UNESCO Recognition",
     detail: "Kolkata Durga Puja tradition inscribed as UNESCO Intangible Cultural Heritage of Humanity — a celebration Deshapriya Park is part of.",
+  },
+  {
+    year: "2022",
+    label: "Pandal Theme",
+    detail: "Bhubaneswari.",
+  },
+  {
+    year: "2023",
+    label: "Pandal Theme",
+    detail: "Jyoti.",
+  },
+  {
+    year: "2024",
+    label: "Pandal Theme",
+    detail: "Universal Shakti — The Power that Connects All.",
   },
   {
     year: "2025",
@@ -145,11 +162,15 @@ export default function HomePage() {
           className="relative min-h-screen flex items-center justify-center overflow-hidden"
         >
           {/* Background image */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url('/images/hero-pandal.png')" }}
-          />
+          <div aria-hidden="true" className="absolute inset-0">
+            <Image
+              src="/images/hero.png"
+              alt=""
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </div>
           {/* Dark overlay for text legibility */}
           <div
             aria-hidden="true"
@@ -157,15 +178,20 @@ export default function HomePage() {
           />
 
           <div className="relative z-10 text-center px-4 sm:px-8 max-w-5xl mx-auto pt-16">
-            {/* Decorative diya symbol */}
-            <div className="text-5xl sm:text-6xl mb-6 drop-shadow-lg" aria-hidden="true">
-              🪔
+            <div className="mb-6 flex justify-center">
+              <Image
+                src="/images/logo.jpg"
+                alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)"
+                width={96}
+                height={96}
+                className="rounded-full object-cover drop-shadow-lg"
+              />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-md mb-4">
-              Deshapriya Park Sarbojanin
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight drop-shadow-md mb-4 uppercase tracking-wide">
+              BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
               <br />
-              <span className="text-yellow-300">Durgotsav</span>
+              <span className="text-yellow-300">(DESHAPRIYA PARK)</span>
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl text-orange-100 font-medium mb-2">
@@ -219,48 +245,6 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Theme history table */}
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-5 text-center">
-                Pandal Themes Through the Years
-              </h3>
-              <div className="overflow-x-auto rounded-xl border border-orange-100 shadow-sm">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-orange-600 to-amber-500 text-white">
-                      <th className="px-5 py-3 text-left font-semibold w-20">Year</th>
-                      <th className="px-5 py-3 text-left font-semibold">Theme / Highlight</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {themes.map((t, i) => (
-                      <tr
-                        key={t.year}
-                        className={`border-b border-orange-50 last:border-0 ${
-                          t.highlight
-                            ? "bg-orange-50"
-                            : i % 2 === 0
-                            ? "bg-white"
-                            : "bg-gray-50/50"
-                        }`}
-                      >
-                        <td className="px-5 py-3 font-semibold text-orange-700 whitespace-nowrap">
-                          {t.year}
-                        </td>
-                        <td className="px-5 py-3 text-gray-700">
-                          {t.highlight && (
-                            <span className="inline-block mr-2 text-orange-500" aria-hidden="true">
-                              ★
-                            </span>
-                          )}
-                          {t.theme}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -498,12 +482,21 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               {/* Brand */}
-              <div className="text-center md:text-left">
-                <div className="text-xl font-bold text-white mb-1">
-                  Deshapriya Park Sarbojanin Durgotsav
-                </div>
-                <div className="text-sm text-gray-400">
-                  Celebrating Tradition Since 1938 · Ballygunge, Kolkata
+              <div className="flex items-center gap-4 text-center md:text-left">
+                <Image
+                  src="/images/logo.jpg"
+                  alt="Deshapriya Park Sarbojanin Durgotsav"
+                  width={52}
+                  height={52}
+                  className="rounded-full shrink-0 border-2 border-white/20 object-cover"
+                />
+                <div>
+                  <div className="text-xl font-bold text-white mb-1">
+                    Deshapriya Park Sarbojanin Durgotsav
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Celebrating Tradition Since 1938 · Ballygunge, Kolkata
+                  </div>
                 </div>
               </div>
 

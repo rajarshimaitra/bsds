@@ -3,9 +3,9 @@ import Link from "next/link";
 import PrintButton from "@/components/landing/PrintButton";
 
 export const metadata: Metadata = {
-  title: "Membership Application Form — Deshapriya Park Sarbojanin Durgotsav",
+  title: "Membership Application Form — BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)",
   description:
-    "Print and fill this membership application form to apply for membership at Deshapriya Park Sarbojanin Durgotsav, Kolkata.",
+    "Print and fill this membership application form to apply for membership at BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK), Kolkata.",
 };
 
 export default function MembershipFormPage() {
@@ -51,9 +51,15 @@ export default function MembershipFormPage() {
 
           {/* ── Header ─────────────────────────────────────────── */}
           <header className="mb-8 border-b-2 border-sky-600 pb-6 text-center">
-            <div className="text-3xl mb-2" aria-hidden="true">🪔</div>
+            <div className="mb-3 flex justify-center">
+              <img
+                src="/images/logo.jpg"
+                alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)"
+                className="h-16 w-16 rounded-full object-cover"
+              />
+            </div>
             <h1 className="mb-1 text-xl font-extrabold uppercase leading-tight tracking-wide text-slate-900 sm:text-2xl">
-              Deshapriya Park Sarbojanin Durgotsav
+              BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)
             </h1>
             <p className="text-sm text-slate-600">
               Deshapriya Park, Tilak Road / 34A Manoharpukur Road, Ballygunge, Kolkata — 700029
@@ -166,7 +172,7 @@ export default function MembershipFormPage() {
             </h2>
             <p className="text-sm leading-relaxed text-slate-700">
               I, the undersigned, hereby apply for membership of{" "}
-              <strong>Deshapriya Park Sarbojanin Durgotsav</strong> and declare that the
+              <strong>BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)</strong> and declare that the
               information furnished above is true and correct to the best of my knowledge. I
               agree to abide by the rules and regulations of the club and understand that my
               membership is subject to the approval of the club committee.
@@ -212,7 +218,7 @@ export default function MembershipFormPage() {
 
           {/* ── Footer note ─────────────────────────────────────── */}
           <div className="mt-8 border-t border-slate-100 pt-4 text-center text-xs text-slate-400">
-            Deshapriya Park Sarbojanin Durgotsav · Est. 1938 · Ballygunge, Kolkata 700029 · +91 94330 82863
+            BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK) · Est. 1938 · Ballygunge, Kolkata 700029 · +91 94330 82863
           </div>
         </div>
 

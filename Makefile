@@ -1,4 +1,4 @@
-.PHONY: install seed build dev backend frontend setup start prod prod-fresh
+.PHONY: install seed build dev backend frontend setup start prod prod-fresh backup backup-test
 
 # First-time setup: install JS deps and seed the database
 setup: install seed
@@ -40,6 +40,21 @@ start:
 
 # Build and run both services in production mode
 prod: build start
+
+# Run backup integration tests (requires sqlite3 CLI)
+backup-test:
+	cd apps/backend && cargo test --test test_backup
+
+# Backup the production database (reads DATABASE_URL from apps/backend/.env)
+backup:
+	@set -e; \
+	DB_PATH=$$(grep '^DATABASE_URL=' apps/backend/.env | sed 's|^DATABASE_URL=sqlite:||'); \
+	BACKUP_DIR="$(CURDIR)/sqlite/backups"; \
+	mkdir -p "$$BACKUP_DIR"; \
+	DEST="$$BACKUP_DIR/bsds-$$(date +%Y%m%d_%H%M%S).sqlite3"; \
+	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
+	find "$$BACKUP_DIR" -name 'bsds-*.sqlite3' -mtime +7 -delete; \
+	echo "==> Backed up to $$DEST"
 
 # Step 1 — run once to generate apps/backend/.env, then edit staff entries.
 # Step 2 — run again to build, bootstrap, and start.

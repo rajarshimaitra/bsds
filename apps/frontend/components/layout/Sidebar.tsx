@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,7 +18,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { DATA_BRAND_CODE, UI_DASHBOARD_NAME } from "@/lib/branding";
+import { UI_DASHBOARD_NAME } from "@/lib/branding";
 import type { Role } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -135,12 +136,13 @@ function SidebarBrand() {
   return (
     <div className="px-5 pb-4 pt-7">
       <div className="flex items-center gap-3">
-        <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-500 text-sm font-bold text-white shadow-[0_18px_40px_-20px_rgba(59,130,246,0.95)]"
-          aria-hidden="true"
-        >
-          {DATA_BRAND_CODE}
-        </div>
+        <Image
+          src="/images/logo.jpg"
+          alt="Deshapriya Park Sarbojanin Durgotsav"
+          width={44}
+          height={44}
+          className="h-11 w-11 shrink-0 rounded-2xl border border-white/20 object-cover shadow-[0_18px_40px_-20px_rgba(59,130,246,0.95)]"
+        />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold leading-tight text-white">
             {UI_DASHBOARD_NAME}

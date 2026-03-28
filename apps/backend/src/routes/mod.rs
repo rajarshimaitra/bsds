@@ -8,6 +8,7 @@ pub mod activity_log;
 pub mod approvals;
 pub mod audit_log;
 pub mod auth;
+pub mod onboarding;
 pub mod cron;
 pub mod dashboard;
 pub mod members;

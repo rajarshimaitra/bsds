@@ -258,21 +258,44 @@ async fn change_password(
     .execute(&pool)
     .await;
 
-    match result {
-        Ok(_) => (
-            StatusCode::OK,
-            Json(serde_json::json!({ "success": true })),
+    if let Err(e) = result {
+        tracing::error!("change-password update failed: {e}");
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({ "error": "internal server error" })),
         )
-            .into_response(),
-        Err(e) => {
-            tracing::error!("change-password update failed: {e}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({ "error": "internal server error" })),
-            )
-                .into_response()
-        }
+            .into_response();
     }
+
+    // Log the password change event
+    let log_id = uuid::Uuid::new_v4().to_string();
+    let _ = sqlx::query(
+        "INSERT INTO activity_logs (id, user_id, action, description, metadata, created_at)
+         VALUES (?, ?, 'password_changed', ?, NULL, datetime('now'))",
+    )
+    .bind(&log_id)
+    .bind(&claims.user_id)
+    .bind(format!("User {} changed their password", claims.username))
+    .execute(&pool)
+    .await;
+
+    // Re-issue session cookie with must_change_password = false
+    let new_claims = SessionClaims {
+        user_id: claims.user_id.clone(),
+        username: claims.username.clone(),
+        role: claims.role.clone(),
+        member_id: claims.member_id.clone(),
+        must_change_password: false,
+    };
+    let secret = std::env::var("SESSION_SECRET").unwrap_or_default();
+    let token = create_session_token(&new_claims, &secret);
+
+    (
+        StatusCode::OK,
+        [(SET_COOKIE, make_cookie(&token))],
+        Json(serde_json::json!({ "success": true })),
+    )
+        .into_response()
 }
 
 // ---------------------------------------------------------------------------

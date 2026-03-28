@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
+import { CompleteProfileModal } from "@/components/onboarding/CompleteProfileModal";
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -644,6 +646,10 @@ function MemberDashboard({
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const role = user?.role;
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // A member_id starting with "PENDING-" means the user hasn't completed onboarding yet
+  const needsProfile = !!user?.memberId?.startsWith("PENDING-");
   const { data: stats, error, isLoading, mutate } = useApi<AdminStats | MemberStats>(
     user ? "/api/dashboard/stats" : null,
     {
@@ -689,14 +695,51 @@ export default function DashboardPage() {
 
   if (!stats || !role) return null;
 
-  if (role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER") {
-    return <AdminDashboard stats={stats as AdminStats} role={role} />;
-  }
-
   return (
-    <MemberDashboard
-      stats={stats as MemberStats}
-      memberName={user?.username}
-    />
+    <>
+      <CompleteProfileModal
+        open={profileModalOpen}
+        prefillName={user?.username}
+        onSuccess={() => {
+          setProfileModalOpen(false);
+          void mutate();
+        }}
+        onSkip={() => setProfileModalOpen(false)}
+      />
+
+      {needsProfile && (
+        <div className="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <AlertCircleIcon className="mt-0.5 h-6 w-6 shrink-0 text-amber-600" />
+              <div>
+                <p className="text-base font-bold text-amber-900">
+                  Your membership profile is incomplete
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                  You haven&apos;t filled in your personal details yet. Your membership
+                  status and history won&apos;t be visible until you complete your profile.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => setProfileModalOpen(true)}
+            >
+              Complete profile
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER" ? (
+        <AdminDashboard stats={stats as AdminStats} role={role} />
+      ) : (
+        <MemberDashboard
+          stats={stats as MemberStats}
+          memberName={user?.username}
+        />
+      )}
+    </>
   );
 }

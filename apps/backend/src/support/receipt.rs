@@ -22,7 +22,7 @@ use crate::support::membership_rules::{
 // Club constants
 // ---------------------------------------------------------------------------
 
-pub const CLUB_NAME: &str = "Deshapriya Park Sarbojanin Durgotsav";
+pub const CLUB_NAME: &str = "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)";
 pub const CLUB_ADDRESS: &str =
     "Deshapriya Park, Bhawanipur, Kolkata - 700 026, West Bengal";
 pub const CLUB_PHONE: &str = "+91 98300 XXXXX";

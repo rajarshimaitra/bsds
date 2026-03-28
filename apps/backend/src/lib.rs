@@ -29,6 +29,7 @@ pub fn build_router(pool: SqlitePool) -> Router {
 
     Router::new()
         .nest("/api/auth",         routes::auth::router())
+        .nest("/api/onboarding",   routes::onboarding::router())
         .nest("/api/members",      routes::members::router())
         .nest("/api/memberships",  routes::memberships::router())
         .nest("/api/my-membership",routes::my_membership::router())

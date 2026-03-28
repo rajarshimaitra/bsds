@@ -1,0 +1,23 @@
+# staff.toml — Production bootstrap config
+# Copy this file to staff.toml, fill in real details, then run:
+#   cargo run --bin bootstrap -- --config staff.toml
+#
+# staff.toml is gitignored and should never be committed.
+
+[[staff]]
+name  = "Subhash Mukherjee"
+email = "subhash@bsds.club"
+phone = "9830000001"
+role  = "ADMIN"
+
+[[staff]]
+name  = "Ramesh Chatterjee"
+email = "ramesh@bsds.club"
+phone = "9830000002"
+role  = "OPERATOR"
+
+[[staff]]
+name  = "Pratima Das"
+email = "pratima@bsds.club"
+phone = "9830000008"
+role  = "ORGANISER"

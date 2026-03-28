@@ -728,7 +728,7 @@ pub async fn seed_activity_logs(pool: &SqlitePool) {
 // Receipts — one per eligible CASH_IN MEMBERSHIP/SPONSORSHIP transaction
 // ---------------------------------------------------------------------------
 
-const CLUB_NAME: &str = "Deshapriya Park Sarbojanin Durgotsav";
+const CLUB_NAME: &str = "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)";
 const CLUB_ADDR: &str = "Deshapriya Park, Bhawanipur, Kolkata - 700 026, West Bengal";
 
 pub async fn seed_receipts(pool: &SqlitePool) {

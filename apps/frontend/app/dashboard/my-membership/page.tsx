@@ -19,8 +19,9 @@
  * Cash payment creates a single Transaction with boolean fee flags.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { CompleteProfileModal } from "@/components/onboarding/CompleteProfileModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -207,6 +208,7 @@ export default function MyMembershipPage() {
   const { user: authUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<MembershipType>("MONTHLY");
   const [selectedMode, setSelectedMode] = useState<"UPI" | "BANK_TRANSFER" | "CASH">("CASH");
@@ -223,6 +225,8 @@ export default function MyMembershipPage() {
   const [receiptError, setReceiptError] = useState<string | null>(null);
 
   const isSubMember = (authUser as Record<string, unknown> | null)?.isSubMember === true;
+
+  // Auto-open the profile modal when the user has no member record yet
   const {
     data,
     error,
@@ -235,6 +239,12 @@ export default function MyMembershipPage() {
       revalidateOnFocus: true,
     }
   );
+
+  useEffect(() => {
+    if (data?.notRegistered) {
+      setProfileModalOpen(true);
+    }
+  }, [data?.notRegistered]);
 
   // ---------------------------------------------------------------------------
   // Receipt dialog
@@ -424,17 +434,37 @@ export default function MyMembershipPage() {
       <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Membership</h1>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Not registered warning                                               */}
+      {/* Profile completion modal                                             */}
       {/* ------------------------------------------------------------------ */}
+      <CompleteProfileModal
+        open={profileModalOpen}
+        prefillName={authUser?.username}
+        onSuccess={() => {
+          setProfileModalOpen(false);
+          void mutate();
+        }}
+        onSkip={() => setProfileModalOpen(false)}
+      />
+
+      {/* Not registered — modal trigger banner */}
       {data.notRegistered && (
-        <Card className="border-red-300 bg-red-50">
-          <CardContent className="p-5">
-            <p className="text-base font-semibold text-red-700">
-              You are not registered with the club.
-            </p>
-            <p className="mt-1 text-sm text-red-600">
-              Please register with the club as soon as possible to activate your membership and access all benefits.
-            </p>
+        <Card className="border-amber-300 bg-amber-50">
+          <CardContent className="flex flex-col items-start justify-between gap-3 p-5 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-base font-semibold text-amber-800">
+                Your membership profile is not set up yet.
+              </p>
+              <p className="mt-0.5 text-sm text-amber-700">
+                Fill in your details to activate your membership record.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => setProfileModalOpen(true)}
+            >
+              Complete profile
+            </Button>
           </CardContent>
         </Card>
       )}

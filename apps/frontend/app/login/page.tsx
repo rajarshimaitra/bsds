@@ -19,6 +19,7 @@
 import { Suspense, useState, useEffect, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import Image from "next/image";
 import Link from "next/link";
 import { UI_DASHBOARD_NAME } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
@@ -224,13 +225,22 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.22),_transparent_20rem),linear-gradient(180deg,#eff6ff_0%,#f8fafc_45%,#eef2ff_100%)] p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-block">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Deshapriya Park Durga Puja Club
-            </h1>
-            <p className="mt-1 text-sm uppercase tracking-[0.22em] text-sky-700">
-              {UI_DASHBOARD_NAME}
-            </p>
+          <Link href="/" className="inline-flex flex-col items-center gap-3">
+            <Image
+              src="/images/logo.jpg"
+              alt="Deshapriya Park Sarbojanin Durgotsav"
+              width={72}
+              height={72}
+              className="rounded-full border-2 border-slate-200 object-cover shadow-md"
+            />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                Deshapriya Park Durga Puja Club
+              </h1>
+              <p className="mt-1 text-sm uppercase tracking-[0.22em] text-sky-700">
+                {UI_DASHBOARD_NAME}
+              </p>
+            </div>
           </Link>
         </div>
 

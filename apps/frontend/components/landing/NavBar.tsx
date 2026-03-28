@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 /**
@@ -29,14 +30,22 @@ export default function NavBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Club name */}
-          <Link
-            href="/"
-            className={`font-bold text-base sm:text-lg leading-tight transition-colors ${
-              scrolled ? "text-slate-900" : "text-white"
-            }`}
-          >
-            <span className="hidden sm:inline">Deshapriya Park Sarbojanin Durgotsav</span>
-            <span className="sm:hidden">Deshapriya Park</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/images/logo.jpg"
+              alt="Deshapriya Park Sarbojanin Durgotsav"
+              width={36}
+              height={36}
+              className="rounded-full shrink-0 border border-white/30 object-cover"
+            />
+            <span
+              className={`font-bold text-base sm:text-lg leading-tight transition-colors ${
+                scrolled ? "text-slate-900" : "text-white"
+              }`}
+            >
+              <span className="hidden sm:inline">Deshapriya Park Sarbojanin Durgotsav</span>
+              <span className="sm:hidden">Deshapriya Park</span>
+            </span>
           </Link>
 
           {/* Desktop nav links */}

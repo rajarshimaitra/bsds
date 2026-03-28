@@ -2,7 +2,7 @@
  * Client-safe receipt utilities — no server-side dependencies.
  */
 
-export const CLUB_NAME = "Deshapriya Park Sarbojanin Durgotsav";
+export const CLUB_NAME = "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)";
 export const CLUB_ADDRESS =
   "Deshapriya Park, Bhawanipur, Kolkata - 700 026, West Bengal";
 export const CLUB_PHONE = "+91 98300 XXXXX";

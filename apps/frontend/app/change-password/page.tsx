@@ -77,9 +77,17 @@ export default function ChangePasswordPage() {
       }
 
       // Password changed successfully — refresh the auth context so
-      // mustChangePassword is now false, then navigate to dashboard.
+      // mustChangePassword is now false, then navigate role-appropriately.
       await refresh();
-      router.push("/dashboard");
+      // ADMIN / OPERATOR go straight to the members management page.
+      // Everyone else goes to My Membership where the profile modal will auto-open.
+      const me = await import("@/lib/auth-client").then((m) => m.getMe());
+      const role = me?.role;
+      if (role === "ADMIN" || role === "OPERATOR") {
+        router.push("/dashboard/members");
+      } else {
+        router.push("/dashboard/my-membership");
+      }
       router.refresh();
     } catch {
       setError("An unexpected error occurred. Please try again.");

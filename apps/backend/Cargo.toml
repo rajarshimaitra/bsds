@@ -15,6 +15,10 @@ path = "src/main.rs"
 name = "seed"
 path = "src/bin/seed.rs"
 
+[[bin]]
+name = "bootstrap"
+path = "src/bin/bootstrap.rs"
+
 [dependencies]
 axum = { version = "0.7", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -38,6 +42,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 thiserror = "1"
 dotenvy = "0.15"
+toml = { version = "0.8", features = ["parse"] }
 
 [dev-dependencies]
 tempfile = "3"

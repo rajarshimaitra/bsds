@@ -17,9 +17,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: `${UI_DASHBOARD_NAME} | Deshapriya Park Durga Puja Club`,
+  title: `${UI_DASHBOARD_NAME} | BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)`,
   description:
-    `${UI_DASHBOARD_NAME} for member management, payments, and club administration for Deshapriya Park Durga Puja Club, Kolkata.`,
+    `${UI_DASHBOARD_NAME} for member management, payments, and club administration for BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK), Kolkata.`,
 };
 
 export default function RootLayout({
