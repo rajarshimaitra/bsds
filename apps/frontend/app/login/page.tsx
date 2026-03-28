@@ -172,8 +172,8 @@ function LoginForm() {
 
           {/* Test mode auto-fill section */}
           {isTestMode && (
-            <div className="space-y-2 rounded-2xl border border-dashed border-sky-200 bg-sky-50/70 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
+            <div className="space-y-2 rounded-2xl border border-dashed border-amber-200 bg-amber-50/70 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
                 Test accounts — development only
               </p>
               <div className="flex flex-wrap gap-2">
@@ -185,7 +185,7 @@ function LoginForm() {
                       handleTestLogin(account.email, account.password)
                     }
                     disabled={loading}
-                    className="inline-flex items-center rounded-xl border border-white bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-sky-50 hover:text-slate-900 disabled:cursor-wait disabled:opacity-50"
+                    className="inline-flex items-center rounded-xl border border-white bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-amber-50 hover:text-slate-900 disabled:cursor-wait disabled:opacity-50"
                   >
                     {account.label}
                   </button>
@@ -206,7 +206,7 @@ function LoginForm() {
 
           <Link
             href="/"
-            className="text-center text-sm text-slate-500 hover:text-sky-700"
+            className="text-center text-sm text-slate-500 hover:text-orange-700"
           >
             Back to home
           </Link>
@@ -222,7 +222,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.22),_transparent_20rem),linear-gradient(180deg,#eff6ff_0%,#f8fafc_45%,#eef2ff_100%)] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(234,88,12,0.18),_transparent_20rem),linear-gradient(180deg,#fff7ed_0%,#f8fafc_45%,#ffedd5_100%)] p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex flex-col items-center gap-3">
@@ -237,7 +237,7 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 Deshapriya Park Durga Puja Club
               </h1>
-              <p className="mt-1 text-sm uppercase tracking-[0.22em] text-sky-700">
+              <p className="mt-1 text-sm uppercase tracking-[0.22em] text-orange-700">
                 {UI_DASHBOARD_NAME}
               </p>
             </div>

@@ -35,10 +35,10 @@ export default function MembershipFormPage() {
       />
 
       {/* Back link + Print button — hidden when printing */}
-      <div className="no-print flex items-center justify-between border-b border-sky-100 bg-sky-50/80 px-4 py-3">
+      <div className="no-print flex items-center justify-between border-b border-orange-100 bg-orange-50/80 px-4 py-3">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-sky-700 transition-colors hover:text-slate-900"
+          className="inline-flex items-center gap-2 text-sm font-medium text-orange-700 transition-colors hover:text-slate-900"
         >
           ← Back to Home
         </Link>
@@ -46,11 +46,11 @@ export default function MembershipFormPage() {
       </div>
 
       {/* Page wrapper — centres the A4 card on screen */}
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_20rem),linear-gradient(180deg,#eff6ff_0%,#f8fafc_55%,#eef2ff_100%)] px-4 py-8 print:bg-white print:py-0">
-        <div className="print-page mx-auto max-w-[794px] rounded-sm border border-sky-100 bg-white p-10 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.28)] sm:p-12 print:max-w-none print:rounded-none print:border-none print:shadow-none">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(234,88,12,0.14),_transparent_20rem),linear-gradient(180deg,#fff7ed_0%,#f8fafc_55%,#ffedd5_100%)] px-4 py-8 print:bg-white print:py-0">
+        <div className="print-page mx-auto max-w-[794px] rounded-sm border border-orange-100 bg-white p-10 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.28)] sm:p-12 print:max-w-none print:rounded-none print:border-none print:shadow-none">
 
           {/* ── Header ─────────────────────────────────────────── */}
-          <header className="mb-8 border-b-2 border-sky-600 pb-6 text-center">
+          <header className="mb-8 border-b-2 border-orange-600 pb-6 text-center">
             <div className="mb-3 flex justify-center">
               <img
                 src="/images/logo.jpg"
@@ -67,15 +67,15 @@ export default function MembershipFormPage() {
             <p className="mt-1 text-xs text-slate-400">
               Opposite Priya Cinema, near Rash Behari Avenue &nbsp;|&nbsp; Est. 1938
             </p>
-            <div className="mt-5 inline-block rounded border-2 border-sky-600 px-6 py-2">
-              <span className="text-base font-bold uppercase tracking-widest text-sky-700 sm:text-lg">
+            <div className="mt-5 inline-block rounded border-2 border-orange-600 px-6 py-2">
+              <span className="text-base font-bold uppercase tracking-widest text-orange-700 sm:text-lg">
                 Membership Application Form
               </span>
             </div>
           </header>
 
           {/* ── Instructions Block ──────────────────────────────── */}
-          <section className="mb-8 space-y-2 rounded-lg border border-sky-200 bg-sky-50 p-5 text-sm text-slate-700 print:border print:border-gray-300 print:bg-white">
+          <section className="mb-8 space-y-2 rounded-lg border border-orange-200 bg-orange-50 p-5 text-sm text-slate-700 print:border print:border-gray-300 print:bg-white">
             <h2 className="mb-3 text-base font-bold uppercase tracking-wide text-slate-900">
               Instructions
             </h2>
@@ -120,8 +120,8 @@ export default function MembershipFormPage() {
                 <div className="font-medium mb-1">
                   Address <span className="font-normal text-slate-400">(full residential address)</span>
                 </div>
-                <div className="mb-3 mt-4 h-0 border-b border-slate-400" />
-                <div className="mb-3 h-0 border-b border-slate-400" />
+                <div className="mb-8 mt-6 h-0 border-b border-slate-400" />
+                <div className="mb-8 h-0 border-b border-slate-400" />
                 <div className="h-0 border-b border-slate-400" />
               </div>
             </div>
@@ -156,9 +156,10 @@ export default function MembershipFormPage() {
                 <div className="mb-3 text-sm font-semibold text-slate-700">
                   Sub-member {n}
                 </div>
-                <div className="grid grid-cols-1 gap-6 text-sm text-slate-700 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 text-sm text-slate-700 sm:grid-cols-2">
                   <FormField label="Full Name" />
                   <FormField label="WhatsApp Number" />
+                  <FormField label="Email Address" />
                   <FormField label="Relation to Primary Member" />
                 </div>
               </div>
@@ -226,7 +227,7 @@ export default function MembershipFormPage() {
         <div className="no-print mt-6 text-center">
           <Link
             href="/"
-            className="text-sm font-medium text-sky-700 hover:underline"
+            className="text-sm font-medium text-orange-700 hover:underline"
           >
             ← Return to Home
           </Link>

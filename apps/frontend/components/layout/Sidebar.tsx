@@ -141,7 +141,7 @@ function SidebarBrand() {
           alt="Deshapriya Park Sarbojanin Durgotsav"
           width={44}
           height={44}
-          className="h-11 w-11 shrink-0 rounded-2xl border border-white/20 object-cover shadow-[0_18px_40px_-20px_rgba(59,130,246,0.95)]"
+          className="h-11 w-11 shrink-0 rounded-2xl border border-white/20 object-cover shadow-[0_18px_40px_-20px_rgba(234,88,12,0.85)]"
         />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold leading-tight text-white">
@@ -187,7 +187,7 @@ function NavItemRow({
       className={cn(
         "group flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-all duration-200",
         isActive
-          ? "bg-gradient-to-r from-sky-500 to-blue-500 text-white shadow-[0_18px_34px_-20px_rgba(59,130,246,0.95)]"
+          ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_18px_34px_-20px_rgba(234,88,12,0.85)]"
           : "text-slate-300 hover:bg-white/10 hover:text-white"
       )}
       aria-current={isActive ? "page" : undefined}
@@ -256,7 +256,7 @@ export default function Sidebar({ user, onNavigate }: SidebarProps) {
   }
 
   return (
-    <div className="flex h-full w-full max-w-72 flex-col bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_18rem),linear-gradient(180deg,#0f172a_0%,#111c38_52%,#0f172a_100%)] text-white">
+    <div className="flex h-full w-full max-w-72 flex-col bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.18),_transparent_18rem),linear-gradient(180deg,#1a0e05_0%,#1e1308_52%,#1a0e05_100%)] text-white">
       <SidebarBrand />
 
       <nav className="flex-1 overflow-y-auto px-4 pb-6" aria-label="Main navigation">

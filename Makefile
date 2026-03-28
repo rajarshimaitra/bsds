@@ -53,7 +53,6 @@ backup:
 	mkdir -p "$$BACKUP_DIR"; \
 	DEST="$$BACKUP_DIR/bsds-$$(date +%Y%m%d_%H%M%S).sqlite3"; \
 	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
-	find "$$BACKUP_DIR" -name 'bsds-*.sqlite3' -mtime +7 -delete; \
 	echo "==> Backed up to $$DEST"
 
 # Step 1 — run once to generate apps/backend/.env, then edit staff entries.

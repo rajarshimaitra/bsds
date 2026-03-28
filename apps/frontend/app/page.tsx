@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import NavBar from "@/components/landing/NavBar";
+import NewsCarousel from "@/components/landing/NewsCarousel";
+import { getNews } from "@/lib/news";
 
 export const metadata: Metadata = {
   title: "Deshapriya Park Sarbojanin Durgotsav — Since 1938",
@@ -99,32 +101,6 @@ const heritageTimeline = [
   },
 ];
 
-const newsItems = [
-  {
-    date: "Sep 2025",
-    badge: "Upcoming",
-    badgeColor: "bg-orange-100 text-orange-700",
-    title: "Boro Durga 2025 — Giant Idol Revival",
-    body:
-      "The 2025 edition revives the spectacular giant Durga idol concept that set world records a decade ago. Opening: 28 September 2025. The club aims to recreate the awe and nostalgia of the 2015 celebration with a towering, artistically intricate idol.",
-  },
-  {
-    date: "Oct 2024",
-    badge: "2024",
-    badgeColor: "bg-amber-100 text-amber-700",
-    title: "Universal Shakti — The Power that Connects All",
-    body:
-      "The 2024 celebration (also themed 'Bhubaneswari') featured sculptor Pradip Rudra Pal's idols, a blend of Indian temple artistry and contemporary abstract installations, and Chandannagar-style lighting narrating social messages.",
-  },
-  {
-    date: "Ongoing",
-    badge: "Awards",
-    badgeColor: "bg-yellow-100 text-yellow-700",
-    title: "Recognised in Major Award Circuits",
-    body:
-      "Deshapriya Park regularly competes in the Biswa Bangla Sharad Samman (State Government award), ABP Ananda Sharod Arghya, and CESC The Telegraph True Spirit Puja — the most prestigious Durga Puja award circuits in West Bengal.",
-  },
-];
 
 /* ─── Components ────────────────────────────────────────────────────────── */
 
@@ -149,7 +125,9 @@ function SectionHeading({
 
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 
-export default function HomePage() {
+export default async function HomePage() {
+  const news = await getNews();
+
   return (
     <>
       <NavBar />
@@ -236,7 +214,7 @@ export default function HomePage() {
               {activities.map((act) => (
                 <div
                   key={act.title}
-                  className="rounded-xl border border-orange-100 bg-orange-50/30 p-6 hover:shadow-md transition-shadow"
+                  className="rounded-xl border-2 border-orange-300 bg-orange-50 p-6 shadow-sm hover:shadow-lg hover:border-orange-400 hover:bg-orange-100/60 transition-all"
                 >
                   <div className="text-3xl mb-3" aria-hidden="true">{act.icon}</div>
                   <h3 className="font-semibold text-gray-900 text-base mb-2">{act.title}</h3>
@@ -352,35 +330,11 @@ export default function HomePage() {
         {/* ── Latest News ──────────────────────────────────────────── */}
         <section id="news" className="py-20 md:py-28 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SectionHeading subtitle="The latest celebrations, upcoming events, and award recognition.">
+            <SectionHeading subtitle="The latest coverage from around the web — newest first.">
               Latest News
             </SectionHeading>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {newsItems.map((item) => (
-                <article
-                  key={item.title}
-                  className="rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
-                >
-                  {/* Accent bar */}
-                  <div className="h-1.5 bg-gradient-to-r from-orange-500 to-amber-400" />
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.badgeColor}`}
-                      >
-                        {item.badge}
-                      </span>
-                      <span className="text-xs text-gray-400">{item.date}</span>
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-base mb-3 leading-snug">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed flex-1">{item.body}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <NewsCarousel items={news} />
           </div>
         </section>
 

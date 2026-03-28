@@ -4,57 +4,57 @@
 
 @layer base {
   :root {
-    --background: 215 45% 97%;
-    --foreground: 223 28% 18%;
+    --background: 38 45% 97%;
+    --foreground: 20 28% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 223 28% 18%;
+    --card-foreground: 20 28% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 223 28% 18%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 45% 94%;
-    --secondary-foreground: 223 28% 18%;
-    --muted: 214 39% 94%;
-    --muted-foreground: 220 18% 44%;
-    --accent: 214 60% 92%;
-    --accent-foreground: 223 28% 18%;
+    --popover-foreground: 20 28% 16%;
+    --primary: 24 90% 48%;
+    --primary-foreground: 38 100% 97%;
+    --secondary: 35 50% 93%;
+    --secondary-foreground: 20 28% 16%;
+    --muted: 32 38% 93%;
+    --muted-foreground: 25 18% 43%;
+    --accent: 35 55% 90%;
+    --accent-foreground: 20 28% 16%;
     --destructive: 0 72% 56%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 88%;
-    --input: 214 32% 88%;
-    --ring: 221 83% 53%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 32% 87%;
+    --input: 30 32% 87%;
+    --ring: 24 90% 48%;
     --radius: 1rem;
-    --chart-1: 221 83% 53%;
+    --chart-1: 24 90% 48%;
     --chart-2: 187 84% 43%;
     --chart-3: 260 74% 64%;
-    --chart-4: 28 96% 61%;
+    --chart-4: 38 95% 52%;
     --chart-5: 145 63% 42%;
   }
 
   .dark {
-    --background: 224 43% 9%;
-    --foreground: 214 32% 91%;
-    --card: 225 35% 13%;
-    --card-foreground: 214 32% 91%;
-    --popover: 225 35% 13%;
-    --popover-foreground: 214 32% 91%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 224 43% 9%;
-    --secondary: 223 28% 18%;
-    --secondary-foreground: 214 32% 91%;
-    --muted: 223 28% 18%;
-    --muted-foreground: 218 16% 65%;
-    --accent: 222 25% 21%;
-    --accent-foreground: 214 32% 91%;
+    --background: 20 40% 7%;
+    --foreground: 35 25% 88%;
+    --card: 22 32% 11%;
+    --card-foreground: 35 25% 88%;
+    --popover: 22 32% 11%;
+    --popover-foreground: 35 25% 88%;
+    --primary: 24 85% 60%;
+    --primary-foreground: 20 40% 7%;
+    --secondary: 20 26% 16%;
+    --secondary-foreground: 35 25% 88%;
+    --muted: 20 26% 16%;
+    --muted-foreground: 30 16% 63%;
+    --accent: 22 24% 19%;
+    --accent-foreground: 35 25% 88%;
     --destructive: 0 63% 46%;
-    --destructive-foreground: 214 32% 91%;
-    --border: 223 24% 23%;
-    --input: 223 24% 23%;
-    --ring: 217 91% 60%;
-    --chart-1: 217 91% 60%;
+    --destructive-foreground: 35 25% 88%;
+    --border: 22 24% 21%;
+    --input: 22 24% 21%;
+    --ring: 24 85% 60%;
+    --chart-1: 24 85% 60%;
     --chart-2: 187 84% 43%;
     --chart-3: 260 74% 64%;
-    --chart-4: 28 96% 61%;
+    --chart-4: 38 95% 52%;
     --chart-5: 145 63% 42%;
   }
 }
@@ -71,9 +71,9 @@
   body {
     @apply min-h-screen bg-background text-foreground;
     background-image:
-      radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 24rem),
-      radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 22rem),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(239, 244, 255, 0.92));
+      radial-gradient(circle at top left, rgba(234, 88, 12, 0.15), transparent 24rem),
+      radial-gradient(circle at top right, rgba(217, 119, 6, 0.11), transparent 22rem),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 237, 0.92));
     font-feature-settings: "ss01" on, "cv02" on, "cv03" on;
   }
 
@@ -95,12 +95,12 @@
   }
 
   ::selection {
-    background: rgba(59, 130, 246, 0.18);
+    background: rgba(234, 88, 12, 0.18);
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(59, 130, 246, 0.45) rgba(148, 163, 184, 0.14);
+    scrollbar-color: rgba(234, 88, 12, 0.45) rgba(186, 130, 90, 0.14);
   }
 
   *::-webkit-scrollbar {
@@ -109,7 +109,7 @@
   }
 
   *::-webkit-scrollbar-track {
-    background: rgba(148, 163, 184, 0.12);
+    background: rgba(186, 130, 90, 0.12);
     border-radius: 999px;
   }
 
@@ -117,13 +117,13 @@
     border: 3px solid transparent;
     border-radius: 999px;
     background:
-      linear-gradient(180deg, rgba(56, 189, 248, 0.88), rgba(59, 130, 246, 0.82))
+      linear-gradient(180deg, rgba(251, 146, 60, 0.88), rgba(234, 88, 12, 0.82))
       padding-box;
   }
 
   *::-webkit-scrollbar-thumb:hover {
     background:
-      linear-gradient(180deg, rgba(14, 165, 233, 0.96), rgba(37, 99, 235, 0.92))
+      linear-gradient(180deg, rgba(249, 115, 22, 0.96), rgba(194, 65, 12, 0.92))
       padding-box;
   }
 }

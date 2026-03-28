@@ -23,7 +23,7 @@ export default function NavBar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "border-b border-sky-100 bg-white/95 shadow-md backdrop-blur-sm"
+          ? "border-b border-orange-100 bg-white/95 shadow-md backdrop-blur-sm"
           : "bg-transparent"
       }`}
     >
@@ -59,7 +59,7 @@ export default function NavBar() {
               <a
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-sky-500 ${
+                className={`text-sm font-medium transition-colors hover:text-orange-500 ${
                   scrolled ? "text-slate-700" : "text-white/90"
                 }`}
               >
@@ -74,7 +74,7 @@ export default function NavBar() {
               href="/membership-form"
               className={`hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
                 scrolled
-                  ? "border-sky-300 text-sky-700 hover:bg-sky-50"
+                  ? "border-orange-300 text-orange-700 hover:bg-orange-50"
                   : "border-white/70 text-white hover:bg-white/10"
               }`}
             >
@@ -82,7 +82,7 @@ export default function NavBar() {
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center px-4 py-1.5 rounded-md bg-slate-900 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-600"
+              className="inline-flex items-center px-4 py-1.5 rounded-md bg-slate-900 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-600"
             >
               Login
             </Link>

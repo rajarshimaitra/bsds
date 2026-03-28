@@ -77,6 +77,40 @@ To rebuild and restart with the existing database and config:
 make prod
 ```
 
+## Automated database backups
+
+Backups use `sqlite3`'s online backup API (safe during live writes) and are stored under `./sqlite/backups/`. All backup files are retained indefinitely.
+
+**Prerequisite:** the `sqlite3` CLI must be installed on the server.
+
+```bash
+apt install sqlite3   # Debian/Ubuntu
+```
+
+**Run a backup manually:**
+
+```bash
+make backup
+```
+
+**Schedule daily backups via cron** — SSH into the server and run `crontab -e`, then add:
+
+```
+# 2:00am — take backup
+0 2 * * * cd /path/to/bsds-dashboard && make backup >> /var/log/bsds-backup.log 2>&1
+
+# 2:10am — verify backup mechanism still works
+10 2 * * * cd /path/to/bsds-dashboard && make backup-test >> /var/log/bsds-backup.log 2>&1
+```
+
+Replace `/path/to/bsds-dashboard` with the absolute path to this repo on the server.
+
+The `backup-test` target runs three integration tests that confirm the backup file was created, all tables are present, and the backup is an independent snapshot of the data at backup time. Failures are logged to `/var/log/bsds-backup.log` with a non-zero exit code, which you can pipe to an alert:
+
+```
+10 2 * * * cd /path/to/bsds-dashboard && make backup-test >> /var/log/bsds-backup.log 2>&1 || echo "backup-test failed" | mail -s "BSDS backup alert" you@example.com
+```
+
 ## Commands
 
 | Command | Description |
@@ -89,3 +123,5 @@ make prod
 | `make backend` | Run backend only (dev) |
 | `make frontend` | Run frontend only (dev) |
 | `make seed` | Re-seed the database with test data (dev only) |
+| `make backup` | Back up the production database to `./sqlite/backups/` |
+| `make backup-test` | Run backup integration tests (requires `sqlite3` CLI) |

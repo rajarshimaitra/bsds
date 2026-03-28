@@ -102,13 +102,13 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.22),_transparent_20rem),linear-gradient(180deg,#eff6ff_0%,#f8fafc_45%,#eef2ff_100%)] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(234,88,12,0.18),_transparent_20rem),linear-gradient(180deg,#fff7ed_0%,#f8fafc_45%,#ffedd5_100%)] p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Deshapriya Park Durga Puja Club
           </h1>
-          <p className="mt-1 text-sm uppercase tracking-[0.22em] text-sky-700">
+          <p className="mt-1 text-sm uppercase tracking-[0.22em] text-orange-700">
             {UI_DASHBOARD_NAME}
           </p>
         </div>
@@ -194,7 +194,7 @@ export default function ChangePasswordPage() {
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full text-sm text-slate-500 hover:text-sky-700"
+                className="w-full text-sm text-slate-500 hover:text-orange-700"
                 onClick={handleSignOut}
                 disabled={loading}
               >
