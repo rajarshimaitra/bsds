@@ -3,6 +3,9 @@ sqlite/*.sqlite3
 sqlite/*.sqlite3-wal
 sqlite/*.sqlite3-shm
 
+# Production databases (timestamped, kept locally but not in git)
+sqlite/prod-*/
+
 # Frontend
 apps/frontend/.next/
 apps/frontend/node_modules
@@ -17,6 +20,9 @@ apps/backend/.env.local
 # Env
 .env
 .env.local
+
+# Production bootstrap config (contains real staff names/emails — never commit)
+staff.toml
 
 # AI artifacts
 .claude/
