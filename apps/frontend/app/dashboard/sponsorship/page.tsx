@@ -396,23 +396,25 @@ export default function SponsorshipPage() {
             Manage sponsors and generate payment links
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => openGenerateLink(null)}
-            variant="outline"
-            className="gap-2"
-          >
-            <LinkIcon className="h-4 w-4" />
-            Generic Link
-          </Button>
-          <Button
-            onClick={() => { setSponsorForm({ name: "", phone: "", email: "", company: "" }); setFormError(null); setShowAddSponsor(true); }}
-            className="gap-2"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Add Sponsor
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => openGenerateLink(null)}
+              variant="outline"
+              className="gap-2"
+            >
+              <LinkIcon className="h-4 w-4" />
+              Generic Link
+            </Button>
+            <Button
+              onClick={() => { setSponsorForm({ name: "", phone: "", email: "", company: "" }); setFormError(null); setShowAddSponsor(true); }}
+              className="gap-2"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Add Sponsor
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Summary cards */}
@@ -483,7 +485,7 @@ export default function SponsorshipPage() {
                   <TableHead>Phone</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right">Total Contributions</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -513,25 +515,25 @@ export default function SponsorshipPage() {
                         }
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openGenerateLink(sponsor)}
-                            className="gap-1 text-xs"
-                          >
-                            <LinkIcon className="h-3 w-3" />
-                            Link
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditSponsor(sponsor)}
-                            title="Edit"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
-                          {isAdmin && (
+                        {isAdmin && (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openGenerateLink(sponsor)}
+                              className="gap-1 text-xs"
+                            >
+                              <LinkIcon className="h-3 w-3" />
+                              Link
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditSponsor(sponsor)}
+                              title="Edit"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -541,8 +543,8 @@ export default function SponsorshipPage() {
                             >
                               <TrashIcon className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -670,7 +672,7 @@ export default function SponsorshipPage() {
                             >
                               <CopyIcon className="h-4 w-4" />
                             </Button>
-                            {link.isActive && !isExpired && (
+                            {isAdmin && link.isActive && !isExpired && (
                               <Button
                                 variant="ghost"
                                 size="icon"

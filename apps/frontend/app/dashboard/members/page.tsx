@@ -103,6 +103,7 @@ export default function MembersPage() {
 
   const isOperator = user?.role === "OPERATOR";
   const isAdmin = user?.role === "ADMIN";
+  const isOrganiser = user?.role === "ORGANISER";
   const params = new URLSearchParams({
     page: String(page),
     limit: "20",
@@ -531,9 +532,16 @@ export default function MembersPage() {
                 Operator
               </Badge>
             )}
+            {isOrganiser && (
+              <Badge variant="outline" className="text-xs">
+                Organiser
+              </Badge>
+            )}
           </div>
           <p className="text-muted-foreground text-sm mt-1">
-            {isOperator
+            {isOrganiser
+              ? "View club members and their sub-members."
+              : isOperator
               ? "Add, edit, or delete members. All changes require admin approval."
               : "Manage club members and their sub-members."}
           </p>
@@ -590,7 +598,7 @@ export default function MembersPage() {
                     <TableHead>Phone</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!isOrganiser && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -635,39 +643,41 @@ export default function MembersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(member.joinedAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <div
-                            className="flex gap-2 justify-end"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setMemberForm({
-                                  name: member.name,
-                                  email: member.email,
-                                  phone: member.phone,
-                                  address: member.address,
-                                });
-                                setIsEditMemberOpen(true);
-                              }}
+                        {!isOrganiser && (
+                          <TableCell className="text-right">
+                            <div
+                              className="flex gap-2 justify-end"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              Edit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setIsDeleteMemberOpen(true);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </TableCell>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedMember(member);
+                                  setMemberForm({
+                                    name: member.name,
+                                    email: member.email,
+                                    phone: member.phone,
+                                    address: member.address,
+                                  });
+                                  setIsEditMemberOpen(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setSelectedMember(member);
+                                  setIsDeleteMemberOpen(true);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   )}
@@ -786,32 +796,34 @@ export default function MembersPage() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => {
-                            setMemberForm({
-                              name: selectedMember.name,
-                              email: selectedMember.email,
-                              phone: selectedMember.phone,
-                              address: selectedMember.address,
-                            });
-                            setIsEditMemberOpen(true);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="flex-1"
-                          onClick={() => setIsDeleteMemberOpen(true)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                      {!isOrganiser && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => {
+                              setMemberForm({
+                                name: selectedMember.name,
+                                email: selectedMember.email,
+                                phone: selectedMember.phone,
+                                address: selectedMember.address,
+                              });
+                              setIsEditMemberOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="flex-1"
+                            onClick={() => setIsDeleteMemberOpen(true)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
 
                       <div className="border-t pt-3">
                         <div className="mb-3 flex items-center justify-between">
@@ -823,7 +835,7 @@ export default function MembersPage() {
                               {subMembersCount} of 3 used
                             </p>
                           </div>
-                          {canAddSubMember && (
+                          {!isOrganiser && canAddSubMember && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -867,36 +879,38 @@ export default function MembersPage() {
                                       </p>
                                     )}
                                   </div>
-                                  <div className="flex shrink-0 gap-1">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 px-2.5 text-sm"
-                                      onClick={() => {
-                                        setSelectedSubMember(sm);
-                                        setSubMemberForm({
-                                          name: sm.name,
-                                          email: sm.email,
-                                          phone: sm.phone,
-                                          relation: sm.relation,
-                                        });
-                                        setIsEditSubMemberOpen(true);
-                                      }}
-                                    >
-                                      Edit
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 px-2.5 text-sm text-destructive hover:text-destructive"
-                                      onClick={() => {
-                                        setSelectedSubMember(sm);
-                                        setIsDeleteSubMemberOpen(true);
-                                      }}
-                                    >
-                                      ×
-                                    </Button>
-                                  </div>
+                                  {!isOrganiser && (
+                                    <div className="flex shrink-0 gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 px-2.5 text-sm"
+                                        onClick={() => {
+                                          setSelectedSubMember(sm);
+                                          setSubMemberForm({
+                                            name: sm.name,
+                                            email: sm.email,
+                                            phone: sm.phone,
+                                            relation: sm.relation,
+                                          });
+                                          setIsEditSubMemberOpen(true);
+                                        }}
+                                      >
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-8 px-2.5 text-sm text-destructive hover:text-destructive"
+                                        onClick={() => {
+                                          setSelectedSubMember(sm);
+                                          setIsDeleteSubMemberOpen(true);
+                                        }}
+                                      >
+                                        ×
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
