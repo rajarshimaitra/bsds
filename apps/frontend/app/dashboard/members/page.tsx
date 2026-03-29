@@ -538,14 +538,16 @@ export default function MembersPage() {
               : "Manage club members and their sub-members."}
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setMemberForm(emptyMemberForm);
-            setIsAddMemberOpen(true);
-          }}
-        >
-          + Add Member
-        </Button>
+        {(isAdmin || isOperator) && (
+          <Button
+            onClick={() => {
+              setMemberForm(emptyMemberForm);
+              setIsAddMemberOpen(true);
+            }}
+          >
+            + Add Member
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
