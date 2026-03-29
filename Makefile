@@ -1,4 +1,4 @@
-.PHONY: install seed build dev backend frontend setup start prod prod-fresh backup backup-test
+.PHONY: install seed build dev backend frontend setup start prod prod-fresh backup backup-test setup-vps dev-vps
 
 # First-time setup: install JS deps and seed the database
 setup: install seed
@@ -20,7 +20,7 @@ build:
 dev:
 	@trap 'kill 0' INT; \
 	  (cd apps/backend && cargo run --bin bsds-backend) & \
-	  (cd apps/frontend && npm run dev -- -p 3001) & \
+	  (cd apps/frontend && npm run dev -- -p 3001 --turbo) & \
 	  wait
 
 # Run backend only
@@ -29,7 +29,7 @@ backend:
 
 # Run frontend only
 frontend:
-	cd apps/frontend && npm run dev -- -p 3001
+	cd apps/frontend && npm run dev -- -p 3001 --turbo
 
 # Run both services in production mode (must run `make build` first)
 start:
@@ -54,6 +54,27 @@ backup:
 	DEST="$$BACKUP_DIR/bsds-$$(date +%Y%m%d_%H%M%S).sqlite3"; \
 	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
 	echo "==> Backed up to $$DEST"
+
+# Write VPS env vars (frontend .env.local + backend .env FRONTEND_URL)
+setup-vps:
+	@printf 'NEXT_PUBLIC_API_URL=http://170.75.161.160:5000\n' > apps/frontend/.env.local
+	@if [ -f apps/backend/.env ]; then \
+		if grep -q '^FRONTEND_URL=' apps/backend/.env; then \
+			sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=http://170.75.161.160:3001|' apps/backend/.env; \
+		else \
+			printf 'FRONTEND_URL=http://170.75.161.160:3001\n' >> apps/backend/.env; \
+		fi; \
+	else \
+		printf 'FRONTEND_URL=http://170.75.161.160:3001\n' > apps/backend/.env; \
+	fi
+	@echo "==> VPS env set (170.75.161.160)"
+
+# Run dev servers configured for VPS (binds frontend to 0.0.0.0 so it's reachable externally)
+dev-vps: setup-vps
+	@trap 'kill 0' INT; \
+	  (cd apps/backend && cargo run --bin bsds-backend) & \
+	  (cd apps/frontend && npm run dev -- -p 3001 -H 0.0.0.0 --turbo) & \
+	  wait
 
 # Step 1 — run once to generate apps/backend/.env, then edit staff entries.
 # Step 2 — run again to build, bootstrap, and start.
