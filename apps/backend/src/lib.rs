@@ -17,11 +17,11 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 /// Build the application router. Exported so integration tests can call it.
 pub fn build_router(pool: SqlitePool) -> Router {
     let frontend_url = std::env::var("FRONTEND_URL")
-        .unwrap_or_else(|_| "http://localhost:3000".to_string());
+        .unwrap_or_else(|_| "http://localhost:3001".to_string());
 
     let cors = CorsLayer::new()
         .allow_origin(frontend_url.parse::<HeaderValue>().unwrap_or_else(|_| {
-            "http://localhost:3000".parse().unwrap()
+            "http://localhost:3001".parse().unwrap()
         }))
         .allow_methods([Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE, Method::OPTIONS])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION, header::COOKIE])

@@ -91,7 +91,7 @@ pub struct PublicSponsorLinkData {
 const CLUB_NAME: &str = "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)";
 
 fn app_url() -> String {
-    std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".to_string())
+    std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3001".to_string())
 }
 
 /// Human-readable sponsor purpose label.

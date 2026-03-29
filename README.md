@@ -1,5 +1,46 @@
 # bsds-dashboard
 
+## VPS Setup
+
+Before deploying, install the following system packages on your server (Debian/Ubuntu):
+
+```bash
+apt update && apt install -y \
+  git \
+  curl \
+  build-essential \
+  pkg-config \
+  libssl-dev \
+  openssl \
+  sqlite3 \
+  net-tools \
+  cron \
+  bpytop \
+  nginx \
+  certbot \
+  python3-certbot-nginx
+```
+
+Install **Rust** (stable toolchain):
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+```
+
+Install **Node.js** 18+ via NodeSource:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt install -y nodejs
+```
+
+Ensure `cron` is running:
+
+```bash
+systemctl enable cron && systemctl start cron
+```
+
 ## Prerequisites
 
 - [Rust](https://rustup.rs/) (stable toolchain)
@@ -110,6 +151,102 @@ The `backup-test` target runs three integration tests that confirm the backup fi
 ```
 10 2 * * * cd /path/to/bsds-dashboard && make backup-test >> /var/log/bsds-backup.log 2>&1 || echo "backup-test failed" | mail -s "BSDS backup alert" you@example.com
 ```
+
+## Connecting to a domain
+
+The app runs two services: the **frontend** on port 3000 and the **backend** on port 5000. To serve them publicly under a domain you need a reverse proxy (Nginx or Caddy) and updated environment variables.
+
+### 1. Point DNS to your server
+
+In your domain registrar or DNS provider, create an **A record** pointing your domain to your server's public IP:
+
+```
+Type  Name   Value
+A     @      <your-server-ip>       # yourdomain.com → frontend
+A     api    <your-server-ip>       # api.yourdomain.com → backend
+```
+
+Use `api.yourdomain.com` as a subdomain for the backend, or choose any subdomain you prefer.
+
+### 2. Update environment variables
+
+Edit `apps/backend/.env` and change the two URL fields to your real domain:
+
+```env
+FRONTEND_URL=https://yourdomain.com
+```
+
+Edit (or create) `apps/frontend/.env.production.local` and set:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+```
+
+Then rebuild and restart:
+
+```bash
+make prod
+```
+
+### 3. Set up Nginx reverse proxy
+
+Install Nginx if needed:
+
+```bash
+apt install nginx
+```
+
+Create `/etc/nginx/sites-available/bsds`:
+
+```nginx
+# Frontend
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# Backend API
+server {
+    listen 80;
+    server_name api.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable the config and reload:
+
+```bash
+ln -s /etc/nginx/sites-available/bsds /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+### 4. Enable HTTPS with Let's Encrypt
+
+```bash
+apt install certbot python3-certbot-nginx
+certbot --nginx -d yourdomain.com -d api.yourdomain.com
+```
+
+Certbot will automatically update your Nginx config to use HTTPS and redirect HTTP. After this, make sure `apps/backend/.env` has `FRONTEND_URL=https://yourdomain.com` and `apps/frontend/.env.production.local` has `NEXT_PUBLIC_API_URL=https://api.yourdomain.com`, then run `make prod` once more to apply the changes.
+
+---
 
 ## Commands
 

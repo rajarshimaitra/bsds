@@ -20,7 +20,7 @@ build:
 dev:
 	@trap 'kill 0' INT; \
 	  (cd apps/backend && cargo run --bin bsds-backend) & \
-	  (cd apps/frontend && npm run dev -- -p 3000) & \
+	  (cd apps/frontend && npm run dev -- -p 3001) & \
 	  wait
 
 # Run backend only
@@ -29,13 +29,13 @@ backend:
 
 # Run frontend only
 frontend:
-	cd apps/frontend && npm run dev -- -p 3000
+	cd apps/frontend && npm run dev -- -p 3001
 
 # Run both services in production mode (must run `make build` first)
 start:
 	@trap 'kill 0' INT; \
 	  (cd apps/backend && ./target/release/bsds-backend) & \
-	  (cd apps/frontend && npm start -- -p 3000) & \
+	  (cd apps/frontend && npm start -- -p 3001) & \
 	  wait
 
 # Build and run both services in production mode
@@ -71,7 +71,7 @@ prod-fresh:
 		printf '# ── Security (auto-generated — do not share or commit) ────────────────────────\n' >> "$$ENV_FILE"; \
 		printf 'SESSION_SECRET=%s\n' "$$SESSION_SECRET" >> "$$ENV_FILE"; \
 		printf 'ENCRYPTION_KEY=%s\n' "$$ENCRYPTION_KEY" >> "$$ENV_FILE"; \
-		printf 'FRONTEND_URL=http://localhost:3000\n\n' >> "$$ENV_FILE"; \
+		printf 'FRONTEND_URL=http://localhost:3001\n\n' >> "$$ENV_FILE"; \
 		printf '# ── Integrations (optional) ───────────────────────────────────────────────────\n' >> "$$ENV_FILE"; \
 		printf 'RAZORPAY_KEY_ID=\n' >> "$$ENV_FILE"; \
 		printf 'RAZORPAY_KEY_SECRET=\n' >> "$$ENV_FILE"; \
@@ -110,5 +110,5 @@ prod-fresh:
 	echo "==> Starting — Ctrl+C stops both services."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && ./target/release/bsds-backend) & \
-	(cd apps/frontend && npm start -- -p 3000) & \
+	(cd apps/frontend && npm start -- -p 3001) & \
 	wait

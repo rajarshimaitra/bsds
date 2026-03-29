@@ -120,7 +120,7 @@ async fn trigger_whatsapp(
 
             let password = temp_password.unwrap_or_else(|| "(check with admin)".into());
             let login_url =
-                std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3000".into())
+                std::env::var("APP_URL").unwrap_or_else(|_| "http://localhost:3001".into())
                     + "/login";
 
             notification_service::notify_membership_approved(
