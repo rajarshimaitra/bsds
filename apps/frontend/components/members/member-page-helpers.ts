@@ -25,15 +25,8 @@ export interface MemberData {
   user: {
     memberId: string;
     membershipStatus: MembershipStatus;
-    membershipType: string | null;
-    membershipStart: string | null;
-    membershipExpiry: string | null;
-    annualFeeStart: string | null;
-    annualFeeExpiry: string | null;
-    totalPaid: number;
+    totalPaid: string;
     applicationFeePaid: boolean;
-    annualFeePaid: boolean;
-    subscriptionFeePaid: boolean;
   } | null;
   subMembers?: SubMemberData[];
 }
