@@ -1,51 +1,17 @@
-.PHONY: install seed build dev backend frontend setup start prod prod-fresh backup backup-test setup-vps dev-vps
+.PHONY: dev dev-local fresh prod install backup backup-test
 
-# First-time setup: install JS deps and seed the database
-setup: install seed
+VPS_IP       := 170.75.161.160
+FRONTEND_URL := http://$(VPS_IP):3001
+API_URL      := http://$(VPS_IP):5000
 
-# Install frontend npm dependencies
+# ── Utility ────────────────────────────────────────────────────────────────────
+
 install:
 	cd apps/frontend && npm install
 
-# Seed the database (run once, or to reset data)
-seed:
-	cd apps/backend && cargo run --bin seed
-
-# Build both services for production
-build:
-	cd apps/backend && cargo build --release
-	cd apps/frontend && npm run build
-
-# Run both services concurrently (Ctrl+C stops both)
-dev:
-	@trap 'kill 0' INT; \
-	  (cd apps/backend && cargo run --bin bsds-backend) & \
-	  (cd apps/frontend && npm run dev -- -p 3001 --turbo) & \
-	  wait
-
-# Run backend only
-backend:
-	cd apps/backend && cargo run --bin bsds-backend
-
-# Run frontend only
-frontend:
-	cd apps/frontend && npm run dev -- -p 3001 --turbo
-
-# Run both services in production mode (must run `make build` first)
-start:
-	@trap 'kill 0' INT; \
-	  (cd apps/backend && ./target/release/bsds-backend) & \
-	  (cd apps/frontend && npm start -- -p 3001) & \
-	  wait
-
-# Build and run both services in production mode
-prod: build start
-
-# Run backup integration tests (requires sqlite3 CLI)
 backup-test:
 	cd apps/backend && cargo test --test test_backup
 
-# Backup the production database (reads DATABASE_URL from apps/backend/.env)
 backup:
 	@set -e; \
 	DB_PATH=$$(grep '^DATABASE_URL=' apps/backend/.env | sed 's|^DATABASE_URL=sqlite:||'); \
@@ -55,30 +21,52 @@ backup:
 	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
 	echo "==> Backed up to $$DEST"
 
-# Write VPS env vars (frontend .env.local + backend .env FRONTEND_URL)
-setup-vps:
-	@printf 'NEXT_PUBLIC_API_URL=http://170.75.161.160:5000\n' > apps/frontend/.env.local
-	@if [ -f apps/backend/.env ]; then \
-		if grep -q '^FRONTEND_URL=' apps/backend/.env; then \
-			sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=http://170.75.161.160:3001|' apps/backend/.env; \
-		else \
-			printf 'FRONTEND_URL=http://170.75.161.160:3001\n' >> apps/backend/.env; \
-		fi; \
+# ── Production builds ──────────────────────────────────────────────────────────
+
+# Seed data + test logins, no forced password reset
+dev:
+	@set -e; \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
+	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
+		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
 	else \
-		printf 'FRONTEND_URL=http://170.75.161.160:3001\n' > apps/backend/.env; \
-	fi
-	@echo "==> VPS env set (170.75.161.160)"
+		printf 'FRONTEND_URL=$(FRONTEND_URL)\n' >> apps/backend/.env; \
+	fi; \
+	echo "==> Building backend..."; \
+	(cd apps/backend && cargo build --release); \
+	echo "==> Seeding database..."; \
+	(cd apps/backend && cargo run --bin seed); \
+	echo "==> Building frontend..."; \
+	(cd apps/frontend && npm run build); \
+	echo "==> Starting — Ctrl+C stops both."; \
+	trap 'kill 0' INT; \
+	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
+	wait
 
-# Run dev servers configured for VPS (binds frontend to 0.0.0.0 so it's reachable externally)
-dev-vps: setup-vps
-	@trap 'kill 0' INT; \
-	  (cd apps/backend && cargo run --bin bsds-backend) & \
-	  (cd apps/frontend && npm run dev -- -p 3001 -H 0.0.0.0 --turbo) & \
-	  wait
+# Same as dev but for local testing (localhost URLs, no 0.0.0.0 binding)
+dev-local:
+	@set -e; \
+	printf 'NEXT_PUBLIC_API_URL=http://localhost:5000\n' > apps/frontend/.env.local; \
+	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
+		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=http://localhost:3001|' apps/backend/.env; \
+	else \
+		printf 'FRONTEND_URL=http://localhost:3001\n' >> apps/backend/.env; \
+	fi; \
+	echo "==> Building backend..."; \
+	(cd apps/backend && cargo build --release); \
+	echo "==> Seeding database..."; \
+	(cd apps/backend && cargo run --bin seed); \
+	echo "==> Building frontend..."; \
+	(cd apps/frontend && npm run build); \
+	echo "==> Starting — Ctrl+C stops both."; \
+	trap 'kill 0' INT; \
+	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/frontend && npm start -- -p 3001) & \
+	wait
 
-# Step 1 — run once to generate apps/backend/.env, then edit staff entries.
-# Step 2 — run again to build, bootstrap, and start.
-prod-fresh:
+# Clean slate — generates a new .env on first run, then builds + bootstraps on second run
+fresh:
 	@set -e; \
 	ENV_FILE="apps/backend/.env"; \
 	if [ ! -f "$$ENV_FILE" ]; then \
@@ -92,7 +80,7 @@ prod-fresh:
 		printf '# ── Security (auto-generated — do not share or commit) ────────────────────────\n' >> "$$ENV_FILE"; \
 		printf 'SESSION_SECRET=%s\n' "$$SESSION_SECRET" >> "$$ENV_FILE"; \
 		printf 'ENCRYPTION_KEY=%s\n' "$$ENCRYPTION_KEY" >> "$$ENV_FILE"; \
-		printf 'FRONTEND_URL=http://localhost:3001\n\n' >> "$$ENV_FILE"; \
+		printf 'FRONTEND_URL=$(FRONTEND_URL)\n\n' >> "$$ENV_FILE"; \
 		printf '# ── Integrations (optional) ───────────────────────────────────────────────────\n' >> "$$ENV_FILE"; \
 		printf 'RAZORPAY_KEY_ID=\n' >> "$$ENV_FILE"; \
 		printf 'RAZORPAY_KEY_SECRET=\n' >> "$$ENV_FILE"; \
@@ -112,24 +100,46 @@ prod-fresh:
 		printf 'BOOTSTRAP_ORGANISER_NAME=Organiser\n' >> "$$ENV_FILE"; \
 		printf 'BOOTSTRAP_ORGANISER_PHONE=9800000002\n' >> "$$ENV_FILE"; \
 		printf 'BOOTSTRAP_ORGANISER_PASSWORD=Organiser@123\n' >> "$$ENV_FILE"; \
-		printf 'NEXT_PUBLIC_API_URL=http://localhost:5000\n' > apps/frontend/.env.production.local; \
+		printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
 		echo ""; \
-		echo "==> $$ENV_FILE generated."; \
+		echo "==> $$ENV_FILE generated (DB: $$DB_DIR)."; \
 		echo ""; \
 		echo "    Edit staff entries (emails, names, phones, passwords), then re-run:"; \
-		echo "      make prod-fresh"; \
+		echo "      make fresh"; \
 		echo ""; \
 		exit 0; \
 	fi; \
-	echo "==> Building backend (release)..."; \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
+	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' "$$ENV_FILE"; \
+	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
-	echo "==> Building frontend (production)..."; \
-	(cd apps/frontend && npm run build); \
 	echo "==> Bootstrapping staff accounts..."; \
 	(cd apps/backend && cargo run --bin bootstrap); \
-	echo ""; \
-	echo "==> Starting — Ctrl+C stops both services."; \
+	echo "==> Building frontend..."; \
+	(cd apps/frontend && npm run build); \
+	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && ./target/release/bsds-backend) & \
-	(cd apps/frontend && npm start -- -p 3001) & \
+	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
+	wait
+
+# Real production — no seed data, bootstrap staff with forced password reset
+prod:
+	@set -e; \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
+	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
+		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
+	else \
+		printf 'FRONTEND_URL=$(FRONTEND_URL)\n' >> apps/backend/.env; \
+	fi; \
+	echo "==> Building backend..."; \
+	(cd apps/backend && cargo build --release); \
+	echo "==> Bootstrapping staff accounts..."; \
+	(cd apps/backend && cargo run --bin bootstrap); \
+	echo "==> Building frontend..."; \
+	(cd apps/frontend && npm run build); \
+	echo "==> Starting — Ctrl+C stops both."; \
+	trap 'kill 0' INT; \
+	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
