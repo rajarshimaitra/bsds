@@ -902,7 +902,7 @@ export default function ActivityLogPage() {
               </div>
 
               {/* Add details — any action that carries newData but no previousData */}
-              {selectedEntry.metadata?.newData && !selectedEntry.metadata?.previousData && (
+              {selectedEntry.metadata?.newData != null && !selectedEntry.metadata?.previousData && (
                 <div>
                   <h3 className="font-semibold text-sm mb-2">Added Details</h3>
                   <AddDetailsSection
@@ -913,7 +913,7 @@ export default function ActivityLogPage() {
               )}
 
               {/* Edit diff — only for edit actions (not delete/remove, which also carry prev+next but aren't diffs) */}
-              {selectedEntry.metadata?.previousData && selectedEntry.metadata?.newData &&
+              {selectedEntry.metadata?.previousData != null && selectedEntry.metadata?.newData != null &&
                !/delete|remove|deleted|removed/.test(selectedEntry.action) && (
                 <div>
                   <h3 className="font-semibold text-sm mb-2">Changes Made</h3>
@@ -965,9 +965,9 @@ export default function ActivityLogPage() {
                     <h3 className="font-semibold text-sm mb-2">Sub-member</h3>
                     <div className="rounded-md border px-3">
                       <DetailRow label="Name" value={name} />
-                      {src?.relation && <DetailRow label="Relation" value={src.relation as string} />}
-                      {src?.email && <DetailRow label="Email" value={src.email as string} />}
-                      {src?.phone && <DetailRow label="Phone" value={src.phone as string} />}
+                      {src?.relation != null && <DetailRow label="Relation" value={src.relation as string} />}
+                      {src?.email != null && <DetailRow label="Email" value={src.email as string} />}
+                      {src?.phone != null && <DetailRow label="Phone" value={src.phone as string} />}
                     </div>
                   </div>
                 );
