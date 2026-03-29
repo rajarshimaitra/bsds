@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-SSH_USER="mojo"
+SSH_USER="ubuntu"
 SSH_PORT="2222"
 APP_PORTS=("3001" "5000")   # frontend, backend
 
@@ -165,15 +165,27 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 NVMEOF
 fi
-ok "Node.js $NODE_VERSION installed"
+# Symlink node/npm/npx into /usr/local/bin so they work without sourcing nvm
+NODE_BIN_DIR=$(su - "$SSH_USER" -c "export NVM_DIR=\"\$HOME/.nvm\" && . \"\$NVM_DIR/nvm.sh\" && dirname \$(which node)")
+ln -sf "$NODE_BIN_DIR/node"  /usr/local/bin/node
+ln -sf "$NODE_BIN_DIR/npm"   /usr/local/bin/npm
+ln -sf "$NODE_BIN_DIR/npx"   /usr/local/bin/npx
+ok "Node.js $NODE_VERSION installed (node/npm/npx symlinked to /usr/local/bin)"
 
 # ── 12. Install Rust (as SSH_USER) ────────────────────────────────────────────
 info "Installing Rust for '$SSH_USER'..."
 su - "$SSH_USER" -c "
   set -e
   curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+  . \"\$HOME/.cargo/env\"
+  cargo --version
 "
-ok "Rust installed"
+# Symlink cargo/rustc into /usr/local/bin so they work without sourcing .cargo/env
+CARGO_BIN="/home/$SSH_USER/.cargo/bin"
+for bin in cargo rustc rustup; do
+    ln -sf "$CARGO_BIN/$bin" "/usr/local/bin/$bin"
+done
+ok "Rust installed (cargo/rustc symlinked to /usr/local/bin)"
 
 # ── 13. Check for suspicious cron jobs ───────────────────────────────────────
 info "Checking for suspicious cron jobs..."
