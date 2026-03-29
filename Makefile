@@ -3,6 +3,7 @@
 VPS_IP       := 170.75.161.160
 FRONTEND_URL := http://$(VPS_IP):3001
 API_URL      := http://$(VPS_IP):5000
+STAFF_TOML   := $(CURDIR)/staff.toml
 
 # ── Utility ────────────────────────────────────────────────────────────────────
 
@@ -65,9 +66,10 @@ dev-local:
 	(cd apps/frontend && npm start -- -p 3001) & \
 	wait
 
-# Clean slate — generates a new .env on first run, then builds + bootstraps on second run
+# Clean slate — run once to generate configs, edit staff.toml, then re-run to build + start
 fresh:
 	@set -e; \
+	NEEDS_INPUT=0; \
 	ENV_FILE="apps/backend/.env"; \
 	if [ ! -f "$$ENV_FILE" ]; then \
 		TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
@@ -86,26 +88,20 @@ fresh:
 		printf 'RAZORPAY_KEY_SECRET=\n' >> "$$ENV_FILE"; \
 		printf 'RAZORPAY_WEBHOOK_SECRET=\n' >> "$$ENV_FILE"; \
 		printf 'WHATSAPP_API_URL=\n' >> "$$ENV_FILE"; \
-		printf 'WHATSAPP_API_TOKEN=\n\n' >> "$$ENV_FILE"; \
-		printf '# ── Bootstrap staff accounts (temp passwords — forced change on first login) ───\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ADMIN_EMAIL=admin@yourdomain.com\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ADMIN_NAME=Admin\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ADMIN_PHONE=9800000000\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ADMIN_PASSWORD=Admin@123\n\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_OPERATOR_EMAIL=operator@yourdomain.com\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_OPERATOR_NAME=Operator\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_OPERATOR_PHONE=9800000001\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_OPERATOR_PASSWORD=Operator@123\n\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ORGANISER_EMAIL=organiser@yourdomain.com\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ORGANISER_NAME=Organiser\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ORGANISER_PHONE=9800000002\n' >> "$$ENV_FILE"; \
-		printf 'BOOTSTRAP_ORGANISER_PASSWORD=Organiser@123\n' >> "$$ENV_FILE"; \
+		printf 'WHATSAPP_API_TOKEN=\n' >> "$$ENV_FILE"; \
 		printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
-		echo ""; \
 		echo "==> $$ENV_FILE generated (DB: $$DB_DIR)."; \
+		NEEDS_INPUT=1; \
+	fi; \
+	if [ ! -f "$(STAFF_TOML)" ]; then \
+		cp staff.toml.example "$(STAFF_TOML)"; \
+		echo "==> staff.toml created from staff.toml.example."; \
+		NEEDS_INPUT=1; \
+	fi; \
+	if [ "$$NEEDS_INPUT" = "1" ]; then \
 		echo ""; \
-		echo "    Edit staff entries (emails, names, phones, passwords), then re-run:"; \
-		echo "      make fresh"; \
+		echo "    Edit staff.toml with real names, emails, phones, and passwords,"; \
+		echo "    then re-run: make fresh"; \
 		echo ""; \
 		exit 0; \
 	fi; \
@@ -113,8 +109,8 @@ fresh:
 	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' "$$ENV_FILE"; \
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
-	echo "==> Bootstrapping staff accounts..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap); \
+	echo "==> Bootstrapping staff accounts from staff.toml..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
@@ -123,9 +119,17 @@ fresh:
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
-# Real production — no seed data, bootstrap staff with forced password reset
+# Real production — no seed data, bootstrap staff from staff.toml with forced password reset
 prod:
 	@set -e; \
+	if [ ! -f "$(STAFF_TOML)" ]; then \
+		cp staff.toml.example "$(STAFF_TOML)"; \
+		echo ""; \
+		echo "==> staff.toml created from staff.toml.example."; \
+		echo "    Edit it with real names, emails, phones, and passwords, then re-run: make prod"; \
+		echo ""; \
+		exit 0; \
+	fi; \
 	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
 	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
 		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
@@ -134,8 +138,8 @@ prod:
 	fi; \
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
-	echo "==> Bootstrapping staff accounts..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap); \
+	echo "==> Bootstrapping staff accounts from staff.toml..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
