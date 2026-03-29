@@ -204,7 +204,7 @@ async fn member_stats(pool: &SqlitePool, user_id: &str) -> Result<serde_json::Va
     let err = |e: sqlx::Error| AppError::Internal(e.to_string());
 
     let primary = sqlx::query_as::<_, UserRow>(
-        "SELECT id, membership_status, membership_type, membership_expiry, total_paid FROM users WHERE id = ?1"
+        "SELECT id, membership_status, membership_type, membership_expiry, CAST(total_paid AS REAL) AS total_paid FROM users WHERE id = ?1"
     )
     .bind(user_id)
     .fetch_optional(pool)
@@ -228,7 +228,7 @@ async fn member_stats(pool: &SqlitePool, user_id: &str) -> Result<serde_json::Va
             let parent_id = parent_id.ok_or(AppError::NotFound)?;
 
             let parent = sqlx::query_as::<_, UserRow>(
-                "SELECT id, membership_status, membership_type, membership_expiry, total_paid FROM users WHERE id = ?1"
+                "SELECT id, membership_status, membership_type, membership_expiry, CAST(total_paid AS REAL) AS total_paid FROM users WHERE id = ?1"
             )
             .bind(&parent_id)
             .fetch_one(pool)
