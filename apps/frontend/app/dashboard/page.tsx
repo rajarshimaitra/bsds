@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { CompleteProfileModal } from "@/components/onboarding/CompleteProfileModal";
@@ -650,26 +650,17 @@ export default function DashboardPage() {
 
   // A member_id starting with "PENDING-" means the user hasn't completed onboarding yet
   const needsProfile = !!user?.memberId?.startsWith("PENDING-");
+  // Include user.id in the cache key so each user gets a completely separate SWR
+  // cache entry. This prevents stale data from a previous session (e.g. MemberStats
+  // cached for a MEMBER account) from being served to a different role that logs in
+  // next in the same tab, without relying on explicit cache clearing.
   const { data: stats, error, isLoading, mutate } = useApi<AdminStats | MemberStats>(
-    user ? "/api/dashboard/stats" : null,
+    user ? `/api/dashboard/stats?_u=${user.id}` : null,
     {
       dedupingInterval: 30_000,
       revalidateOnFocus: true,
     }
   );
-
-  // Hoist shape-mismatch detection before conditional returns (Rules of Hooks).
-  // This detects a stale cross-session SWR cache: an admin-role user logged in
-  // while MemberStats from a previous session is still cached in memory.
-  const isAdminRole = role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER";
-  const shapeMismatch = !!stats && isAdminRole && !("members" in stats);
-
-  // Trigger revalidation via effect, never during render — calling mutate() inside
-  // the render body is a React anti-pattern that can permanently blank the page
-  // under React 18 concurrent rendering.
-  useEffect(() => {
-    if (shapeMismatch) void mutate();
-  }, [shapeMismatch, mutate]);
 
   if (authLoading || (isLoading && !stats)) {
     return (
@@ -706,7 +697,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!stats || !role || shapeMismatch) return null;
+  if (!stats || !role) return null;
 
   return (
     <>
