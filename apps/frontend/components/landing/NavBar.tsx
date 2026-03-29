@@ -33,8 +33,7 @@ export default function NavBar() {
           <Link href="/" className="flex items-center">
             <Image
               src="/images/logo.jpg"
-              alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
-(DESHAPRIYA PARK)"
+              alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)"
               width={36}
               height={36}
               className="rounded-full shrink-0 border border-white/30 object-cover"

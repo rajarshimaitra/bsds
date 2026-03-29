@@ -358,8 +358,7 @@ export default async function HomePage() {
                 <h3 className="font-bold text-gray-900 text-base mb-4">Find Us</h3>
                 <address className="not-italic text-sm text-gray-700 space-y-2">
                   <p className="font-semibold text-gray-900">
-                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
-(DESHAPRIYA PARK)
+                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)
                   </p>
                   <p>Deshapriya Park, Tilak Road</p>
                   <p>34A Manoharpukur Road, Ballygunge</p>
@@ -440,16 +439,14 @@ export default async function HomePage() {
               <div className="flex items-center gap-4 text-center md:text-left">
                 <Image
                   src="/images/logo.jpg"
-                  alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
-(DESHAPRIYA PARK)"
+                  alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)"
                   width={52}
                   height={52}
                   className="rounded-full shrink-0 border-2 border-white/20 object-cover"
                 />
                 <div>
                   <div className="text-xl font-bold text-white mb-1">
-                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
-(DESHAPRIYA PARK)
+                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)
                   </div>
                   <div className="text-sm text-gray-400">
                     Celebrating Tradition Since 1938 · Ballygunge, Kolkata
@@ -481,8 +478,7 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
-(DESHAPRIYA PARK). All rights reserved.
+              &copy; {new Date().getFullYear()} BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK). All rights reserved.
             </div>
           </div>
         </footer>
