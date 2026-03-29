@@ -695,6 +695,15 @@ export default function DashboardPage() {
 
   if (!stats || !role) return null;
 
+  // Guard against stale cross-session SWR cache: if this role expects AdminStats
+  // but the cached shape is MemberStats (no `members` key), force a revalidation.
+  const isAdminRole = role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER";
+  const hasAdminShape = "members" in stats;
+  if (isAdminRole && !hasAdminShape) {
+    void mutate();
+    return null;
+  }
+
   return (
     <>
       <CompleteProfileModal

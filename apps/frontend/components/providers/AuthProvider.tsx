@@ -7,6 +7,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { mutate as swrMutate } from "swr";
 import type { AuthUser } from "@/lib/auth-types";
 import {
   getMe,
@@ -58,6 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await authLogout();
+    // Clear all SWR cached data so stale data from this session isn't
+    // served to a different user who logs in next in the same tab.
+    await swrMutate(() => true, undefined, { revalidate: false });
     setUser(null);
   }, []);
 
