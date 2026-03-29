@@ -51,7 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (username: string, password: string) => {
       const result = await authLogin(username, password);
-      if (result.ok) await refresh();
+      if (result.ok) {
+        // Clear any stale SWR data from a previous session before loading the new
+        // user's data — prevents cross-session cache contamination (e.g. a MEMBER
+        // session's MemberStats being served to an ORGANISER who logs in next).
+        await swrMutate(() => true, undefined, { revalidate: false });
+        await refresh();
+      }
       return result;
     },
     [refresh]

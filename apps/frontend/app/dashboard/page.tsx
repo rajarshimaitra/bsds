@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { CompleteProfileModal } from "@/components/onboarding/CompleteProfileModal";
@@ -658,6 +658,19 @@ export default function DashboardPage() {
     }
   );
 
+  // Hoist shape-mismatch detection before conditional returns (Rules of Hooks).
+  // This detects a stale cross-session SWR cache: an admin-role user logged in
+  // while MemberStats from a previous session is still cached in memory.
+  const isAdminRole = role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER";
+  const shapeMismatch = !!stats && isAdminRole && !("members" in stats);
+
+  // Trigger revalidation via effect, never during render — calling mutate() inside
+  // the render body is a React anti-pattern that can permanently blank the page
+  // under React 18 concurrent rendering.
+  useEffect(() => {
+    if (shapeMismatch) void mutate();
+  }, [shapeMismatch, mutate]);
+
   if (authLoading || (isLoading && !stats)) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -693,16 +706,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!stats || !role) return null;
-
-  // Guard against stale cross-session SWR cache: if this role expects AdminStats
-  // but the cached shape is MemberStats (no `members` key), force a revalidation.
-  const isAdminRole = role === "ADMIN" || role === "OPERATOR" || role === "ORGANISER";
-  const hasAdminShape = "members" in stats;
-  if (isAdminRole && !hasAdminShape) {
-    void mutate();
-    return null;
-  }
+  if (!stats || !role || shapeMismatch) return null;
 
   return (
     <>
