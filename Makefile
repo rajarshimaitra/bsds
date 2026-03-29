@@ -22,55 +22,10 @@ backup:
 	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
 	echo "==> Backed up to $$DEST"
 
-# ── Production builds ──────────────────────────────────────────────────────────
+# ── Builds ─────────────────────────────────────────────────────────────────────
 
-# Seed data + test logins, no forced password reset
-dev:
-	@set -e; \
-	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
-	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
-		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
-	else \
-		printf 'FRONTEND_URL=$(FRONTEND_URL)\n' >> apps/backend/.env; \
-	fi; \
-	echo "==> Building backend..."; \
-	(cd apps/backend && cargo build --release); \
-	echo "==> Seeding database..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
-	echo "==> Installing frontend dependencies..."; \
-	(cd apps/frontend && npm install); \
-	echo "==> Building frontend..."; \
-	(cd apps/frontend && npm run build); \
-	echo "==> Starting — Ctrl+C stops both."; \
-	trap 'kill 0' INT; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
-	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
-	wait
-
-# Same as dev but for local testing (localhost URLs, no 0.0.0.0 binding)
-dev-local:
-	@set -e; \
-	printf 'NEXT_PUBLIC_API_URL=http://localhost:5000\n' > apps/frontend/.env.local; \
-	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
-		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=http://localhost:3001|' apps/backend/.env; \
-	else \
-		printf 'FRONTEND_URL=http://localhost:3001\n' >> apps/backend/.env; \
-	fi; \
-	echo "==> Building backend..."; \
-	(cd apps/backend && cargo build --release); \
-	echo "==> Seeding database..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
-	echo "==> Installing frontend dependencies..."; \
-	(cd apps/frontend && npm install); \
-	echo "==> Building frontend..."; \
-	(cd apps/frontend && npm run build); \
-	echo "==> Starting — Ctrl+C stops both."; \
-	trap 'kill 0' INT; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
-	(cd apps/frontend && npm start -- -p 3001) & \
-	wait
-
-# Clean slate — run once to generate configs, edit staff.toml, then re-run to build + start
+# Generate env/configs + compile. No seed, no bootstrap, no start.
+# Run once, edit staff.toml, then re-run. After this, use make prod or make dev.
 fresh:
 	@set -e; \
 	NEEDS_INPUT=0; \
@@ -113,45 +68,41 @@ fresh:
 	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' "$$ENV_FILE"; \
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
-	echo "==> Bootstrapping staff accounts from staff.toml..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Installing frontend dependencies..."; \
 	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
+	echo "==> Done. Run 'make prod' or 'make dev' to start."
+
+# Bootstrap staff from staff.toml (forced password reset) + start. No seed data.
+prod:
+	@set -e; \
+	echo "==> Bootstrapping staff accounts from staff.toml..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
-# Real production — no seed data, bootstrap staff from staff.toml with forced password reset
-prod:
+# Seed test data + start. Test logins enabled, no forced password reset.
+dev:
 	@set -e; \
-	if [ ! -f "$(STAFF_TOML)" ]; then \
-		cp staff.toml.example "$(STAFF_TOML)"; \
-		echo ""; \
-		echo "==> staff.toml created from staff.toml.example."; \
-		echo "    Edit it with real names, emails, phones, and passwords, then re-run: make prod"; \
-		echo ""; \
-		exit 0; \
-	fi; \
-	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
-	if grep -q '^FRONTEND_URL=' apps/backend/.env 2>/dev/null; then \
-		sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
-	else \
-		printf 'FRONTEND_URL=$(FRONTEND_URL)\n' >> apps/backend/.env; \
-	fi; \
-	echo "==> Building backend..."; \
-	(cd apps/backend && cargo build --release); \
-	echo "==> Bootstrapping staff accounts from staff.toml..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
-	echo "==> Installing frontend dependencies..."; \
-	(cd apps/frontend && npm install); \
-	echo "==> Building frontend..."; \
-	(cd apps/frontend && npm run build); \
+	echo "==> Seeding database..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
+	wait
+
+# Same as dev but for local testing (localhost URLs, no 0.0.0.0 binding)
+dev-local:
+	@set -e; \
+	echo "==> Seeding database..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	echo "==> Starting — Ctrl+C stops both."; \
+	trap 'kill 0' INT; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
+	(cd apps/frontend && npm start -- -p 3001) & \
 	wait
