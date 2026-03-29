@@ -26,7 +26,8 @@ ok "System up to date"
 
 # ── 2. Install required packages ───────────────────────────────────────────────
 info "Installing ufw, fail2ban, unattended-upgrades..."
-apt-get install -y -qq ufw fail2ban unattended-upgrades curl git build-essential
+apt-get install -y -qq ufw fail2ban unattended-upgrades curl git build-essential \
+    sqlite3 pkg-config libssl-dev
 ok "Packages installed"
 
 # ── 3. Verify SSH user and key exist ───────────────────────────────────────────
@@ -142,7 +143,39 @@ else
     warn "/tmp already in fstab — skipping"
 fi
 
-# ── 11. Check for suspicious cron jobs ────────────────────────────────────────
+# ── 11. Install Node.js (via nvm, as SSH_USER) ────────────────────────────────
+info "Installing Node.js via nvm for '$SSH_USER'..."
+NODE_VERSION="20"
+su - "$SSH_USER" -c "
+  set -e
+  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  export NVM_DIR=\"\$HOME/.nvm\"
+  [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+  nvm install $NODE_VERSION
+  nvm alias default $NODE_VERSION
+  nvm use default
+"
+# Add nvm to .bashrc if not already there
+BASHRC="/home/$SSH_USER/.bashrc"
+if ! grep -q 'NVM_DIR' "$BASHRC"; then
+    cat >> "$BASHRC" <<'NVMEOF'
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+NVMEOF
+fi
+ok "Node.js $NODE_VERSION installed"
+
+# ── 12. Install Rust (as SSH_USER) ────────────────────────────────────────────
+info "Installing Rust for '$SSH_USER'..."
+su - "$SSH_USER" -c "
+  set -e
+  curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+"
+ok "Rust installed"
+
+# ── 13. Check for suspicious cron jobs ───────────────────────────────────────
 info "Checking for suspicious cron jobs..."
 for user in root "$SSH_USER"; do
     CRON=$(crontab -u "$user" -l 2>/dev/null || true)
@@ -154,13 +187,20 @@ for user in root "$SSH_USER"; do
     fi
 done
 
-# ── 12. Summary ────────────────────────────────────────────────────────────────
-info "Security setup complete!"
+# ── 14. Summary ────────────────────────────────────────────────────────────────
+info "Setup complete!"
 echo ""
 echo "  SSH port  : $SSH_PORT"
 echo "  Open ports: $SSH_PORT (SSH), ${APP_PORTS[*]} (app)"
 echo "  Auth      : key-only, no root, no passwords"
 echo "  Fail2ban  : 3 attempts = 1h ban"
+echo "  Node.js   : v$NODE_VERSION (nvm)"
+echo "  Rust      : stable (rustup)"
+echo "  sqlite3   : installed"
+echo ""
+echo "  Next steps:"
+echo "    1. git clone your repo"
+echo "    2. cd into it and run: make fresh"
 echo ""
 warn "IMPORTANT: Test SSH in a NEW terminal before closing this session:"
 echo "  ssh -p $SSH_PORT $SSH_USER@$(curl -s ifconfig.me 2>/dev/null || echo YOUR_VPS_IP)"
