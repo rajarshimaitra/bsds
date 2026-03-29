@@ -203,11 +203,12 @@ else
     ok "Rust stable installed"
 fi
 
-# Symlink cargo/rustc/rustup — always refresh
-for bin in cargo rustc rustup; do
-    ln -sf "$CARGO_BIN/$bin" "/usr/local/bin/$bin"
-done
-ok "cargo/rustc/rustup symlinked → /usr/local/bin ($(cargo --version))"
+# Symlink the real compiled binaries (not rustup shims) so cargo works as root
+TOOLCHAIN_BIN=$(su - "$SSH_USER" -c ". \"\$HOME/.cargo/env\" && dirname \$(rustup which cargo)")
+ln -sf "$TOOLCHAIN_BIN/cargo" /usr/local/bin/cargo
+ln -sf "$TOOLCHAIN_BIN/rustc" /usr/local/bin/rustc
+CARGO_VER=$(su - "$SSH_USER" -c ". \"\$HOME/.cargo/env\" && cargo --version")
+ok "cargo/rustc symlinked → /usr/local/bin ($CARGO_VER)"
 
 # ── 12. Verify all required binaries ──────────────────────────────────────────
 info "Verifying dependencies..."
