@@ -35,12 +35,12 @@ dev:
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
 	echo "==> Seeding database..."; \
-	(cd apps/backend && cargo run --bin seed); \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
-	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
@@ -56,12 +56,12 @@ dev-local:
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
 	echo "==> Seeding database..."; \
-	(cd apps/backend && cargo run --bin seed); \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
-	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001) & \
 	wait
 
@@ -114,12 +114,12 @@ fresh:
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
 	echo "==> Bootstrapping staff accounts..."; \
-	(cd apps/backend && cargo run --bin bootstrap); \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
-	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
@@ -135,11 +135,11 @@ prod:
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
 	echo "==> Bootstrapping staff accounts..."; \
-	(cd apps/backend && cargo run --bin bootstrap); \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
-	(cd apps/backend && ./target/release/bsds-backend) & \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
