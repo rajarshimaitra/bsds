@@ -37,6 +37,8 @@ dev:
 	(cd apps/backend && cargo build --release); \
 	echo "==> Seeding database..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
@@ -58,6 +60,8 @@ dev-local:
 	(cd apps/backend && cargo build --release); \
 	echo "==> Seeding database..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
@@ -111,6 +115,8 @@ fresh:
 	(cd apps/backend && cargo build --release); \
 	echo "==> Bootstrapping staff accounts from staff.toml..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
@@ -140,6 +146,8 @@ prod:
 	(cd apps/backend && cargo build --release); \
 	echo "==> Bootstrapping staff accounts from staff.toml..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
