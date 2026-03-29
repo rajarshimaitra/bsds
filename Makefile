@@ -89,7 +89,8 @@ prod:
 # Rebuilds frontend with NEXT_PUBLIC_TEST_MODE=true (baked in at build time).
 dev:
 	@set -e; \
-	echo "==> Seeding database..."; \
+	DB_PATH=$$(grep '^DATABASE_URL=' apps/backend/.env | sed 's|^DATABASE_URL=sqlite:||'); \
+	echo "==> Seeding database: $$DB_PATH"; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
 	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
 	echo "==> Rebuilding frontend with test mode..."; \
