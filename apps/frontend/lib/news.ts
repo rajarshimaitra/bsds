@@ -39,7 +39,8 @@ const CURATED: NewsItem[] = [
   {
     date: "12 Sep 2025",
     source: "KolkataDurgotsav.com",
-    title: "Deshapriya Park Sarbojanin Durgotsav 2025 Theme & Highlights",
+    title: "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK) 2025 Theme & Highlights",
     image: "https://www.kolkatadurgotsav.com/wp-content/uploads/2025/09/deshapriyaparksarbojanin.jpg",
     url: "https://www.kolkatadurgotsav.com/deshapriya-park-sarbojanin-durgotsav.html",
   },

@@ -228,7 +228,8 @@ export default function LoginPage() {
           <Link href="/" className="inline-flex flex-col items-center gap-3">
             <Image
               src="/images/logo.jpg"
-              alt="Deshapriya Park Sarbojanin Durgotsav"
+              alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK)"
               width={72}
               height={72}
               className="rounded-full border-2 border-slate-200 object-cover shadow-md"

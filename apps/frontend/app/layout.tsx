@@ -17,9 +17,12 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: `${UI_DASHBOARD_NAME} | BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK)`,
+  title: "BSDS",
   description:
     `${UI_DASHBOARD_NAME} for member management, payments, and club administration for BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK), Kolkata.`,
+  icons: {
+    icon: "/images/logo.jpg",
+  },
 };
 
 export default function RootLayout({

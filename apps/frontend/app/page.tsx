@@ -6,7 +6,7 @@ import NewsCarousel from "@/components/landing/NewsCarousel";
 import { getNews } from "@/lib/news";
 
 export const metadata: Metadata = {
-  title: "Deshapriya Park Sarbojanin Durgotsav — Since 1938",
+  title: "BSDS",
   description:
     "One of South Kolkata's most iconic Durga Puja celebrations, founded in 1938. 87 years of tradition, heritage, and community spirit. World's tallest Durga idol — 88 feet (2015).",
 };
@@ -57,7 +57,7 @@ const heritageTimeline = [
   {
     year: "1938",
     label: "Founded",
-    detail: "Deshapriya Park Sarbojanin Durgotsav established — one of South Kolkata's earliest community pujas.",
+    detail: "BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY (DESHAPRIYA PARK) established — one of South Kolkata's earliest community pujas.",
   },
   {
     year: "2015",
@@ -358,7 +358,8 @@ export default async function HomePage() {
                 <h3 className="font-bold text-gray-900 text-base mb-4">Find Us</h3>
                 <address className="not-italic text-sm text-gray-700 space-y-2">
                   <p className="font-semibold text-gray-900">
-                    Deshapriya Park Sarbojanin Durgotsav
+                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK)
                   </p>
                   <p>Deshapriya Park, Tilak Road</p>
                   <p>34A Manoharpukur Road, Ballygunge</p>
@@ -439,14 +440,16 @@ export default async function HomePage() {
               <div className="flex items-center gap-4 text-center md:text-left">
                 <Image
                   src="/images/logo.jpg"
-                  alt="Deshapriya Park Sarbojanin Durgotsav"
+                  alt="BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK)"
                   width={52}
                   height={52}
                   className="rounded-full shrink-0 border-2 border-white/20 object-cover"
                 />
                 <div>
                   <div className="text-xl font-bold text-white mb-1">
-                    Deshapriya Park Sarbojanin Durgotsav
+                    BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK)
                   </div>
                   <div className="text-sm text-gray-400">
                     Celebrating Tradition Since 1938 · Ballygunge, Kolkata
@@ -478,7 +481,8 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} Deshapriya Park Sarbojanin Durgotsav. All rights reserved.
+              &copy; {new Date().getFullYear()} BALLYGUNGE SARBOJANIN DURGOTSAB SAMITY
+(DESHAPRIYA PARK). All rights reserved.
             </div>
           </div>
         </footer>
