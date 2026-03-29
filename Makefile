@@ -86,10 +86,14 @@ prod:
 	wait
 
 # Seed test data + start. Test logins enabled, no forced password reset.
+# Rebuilds frontend with NEXT_PUBLIC_TEST_MODE=true (baked in at build time).
 dev:
 	@set -e; \
 	echo "==> Seeding database..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
+	echo "==> Rebuilding frontend with test mode..."; \
+	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
@@ -101,6 +105,9 @@ dev-local:
 	@set -e; \
 	echo "==> Seeding database..."; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	printf 'NEXT_PUBLIC_API_URL=http://localhost:5000\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
+	echo "==> Rebuilding frontend with test mode..."; \
+	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
