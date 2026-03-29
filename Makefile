@@ -22,10 +22,10 @@ backup:
 	sqlite3 "$$DB_PATH" ".backup $$DEST"; \
 	echo "==> Backed up to $$DEST"
 
-# ── Builds ─────────────────────────────────────────────────────────────────────
+# ── Setup ──────────────────────────────────────────────────────────────────────
 
-# Generate env/configs + compile. No seed, no bootstrap, no start.
-# Run once, edit staff.toml, then re-run. After this, use make prod or make dev.
+# Generate env/configs only. No compilation, no seed, no start.
+# Run once, edit staff.toml, then use make prod or make dev.
 fresh:
 	@set -e; \
 	NEEDS_INPUT=0; \
@@ -48,7 +48,6 @@ fresh:
 		printf 'RAZORPAY_WEBHOOK_SECRET=\n' >> "$$ENV_FILE"; \
 		printf 'WHATSAPP_API_URL=\n' >> "$$ENV_FILE"; \
 		printf 'WHATSAPP_API_TOKEN=\n' >> "$$ENV_FILE"; \
-		printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
 		echo "==> $$ENV_FILE generated (DB: $$DB_DIR)."; \
 		NEEDS_INPUT=1; \
 	fi; \
@@ -60,40 +59,47 @@ fresh:
 	if [ "$$NEEDS_INPUT" = "1" ]; then \
 		echo ""; \
 		echo "    Edit staff.toml with real names, emails, phones, and passwords,"; \
-		echo "    then re-run: make fresh"; \
+		echo "    then run: make prod  or  make dev"; \
 		echo ""; \
 		exit 0; \
 	fi; \
-	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
 	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' "$$ENV_FILE"; \
+	echo "==> Config ready. Run 'make prod' or 'make dev'."
+
+# ── Start targets (compile + run) ──────────────────────────────────────────────
+
+# Compile + bootstrap staff from staff.toml (forced password reset) + start.
+prod:
+	@set -e; \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\n' > apps/frontend/.env.local; \
+	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
 	echo "==> Building backend..."; \
 	(cd apps/backend && cargo build --release); \
+	echo "==> Bootstrapping staff accounts from staff.toml..."; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Installing frontend dependencies..."; \
 	(cd apps/frontend && npm install); \
 	echo "==> Building frontend..."; \
 	(cd apps/frontend && npm run build); \
-	echo "==> Done. Run 'make prod' or 'make dev' to start."
-
-# Bootstrap staff from staff.toml (forced password reset) + start. No seed data.
-prod:
-	@set -e; \
-	echo "==> Bootstrapping staff accounts from staff.toml..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bootstrap --config "$(STAFF_TOML)"); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/bsds-backend) & \
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
-# Seed test data + start. Test logins enabled, no forced password reset.
-# Rebuilds frontend with NEXT_PUBLIC_TEST_MODE=true (baked in at build time).
+# Compile + seed test data + start. Test logins enabled, no forced password reset.
 dev:
 	@set -e; \
+	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
+	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=$(FRONTEND_URL)|' apps/backend/.env; \
+	echo "==> Building backend..."; \
+	(cd apps/backend && cargo build --release); \
 	DB_PATH=$$(grep '^DATABASE_URL=' apps/backend/.env | sed 's|^DATABASE_URL=sqlite:||'); \
 	echo "==> Seeding database: $$DB_PATH"; \
 	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
-	printf 'NEXT_PUBLIC_API_URL=$(API_URL)\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
-	echo "==> Rebuilding frontend with test mode..."; \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
+	echo "==> Building frontend (test mode)..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
@@ -101,13 +107,19 @@ dev:
 	(cd apps/frontend && npm start -- -p 3001 -H 0.0.0.0) & \
 	wait
 
-# Same as dev but for local testing (localhost URLs, no 0.0.0.0 binding)
+# Same as dev but bound to localhost only.
 dev-local:
 	@set -e; \
-	echo "==> Seeding database..."; \
-	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
 	printf 'NEXT_PUBLIC_API_URL=http://localhost:5000\nNEXT_PUBLIC_TEST_MODE=true\n' > apps/frontend/.env.local; \
-	echo "==> Rebuilding frontend with test mode..."; \
+	sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=http://localhost:3001|' apps/backend/.env; \
+	echo "==> Building backend..."; \
+	(cd apps/backend && cargo build --release); \
+	DB_PATH=$$(grep '^DATABASE_URL=' apps/backend/.env | sed 's|^DATABASE_URL=sqlite:||'); \
+	echo "==> Seeding database: $$DB_PATH"; \
+	(cd apps/backend && set -a && . ./.env && set +a && ./target/release/seed); \
+	echo "==> Installing frontend dependencies..."; \
+	(cd apps/frontend && npm install); \
+	echo "==> Building frontend (test mode)..."; \
 	(cd apps/frontend && npm run build); \
 	echo "==> Starting — Ctrl+C stops both."; \
 	trap 'kill 0' INT; \
